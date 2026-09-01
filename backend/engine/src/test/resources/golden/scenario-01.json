@@ -1,0 +1,79 @@
+{
+  "name": "scenario-01",
+  "note": "Immutable acceptance case. Expected outputs were worked out by hand. If a case fails, the engine is wrong. Never edit an assertion to make a test pass.",
+  "graph": {
+    "edges": [
+      { "from": "A", "to": "B", "travelMinutes": 20, "confidence": "CONFIRMED", "blocked": false },
+      { "from": "B", "to": "C", "travelMinutes": 15, "confidence": "CONFIRMED", "blocked": false },
+      { "from": "C", "to": "D", "travelMinutes": 10, "confidence": "CONFIRMED", "blocked": false },
+      { "from": "B", "to": "E", "travelMinutes": 30, "confidence": "CONFIRMED", "blocked": false },
+      { "from": "D", "to": "B", "travelMinutes": 25, "confidence": "CONFIRMED", "blocked": false }
+    ]
+  },
+  "cases": [
+    {
+      "id": 1,
+      "description": "origin A, IMPASSABLE, maxHops 3, requireConfirmedEdges true. D is absent: it would be hop 3, and IMPASSABLE decays below ANKLE there. B is never re-emitted despite the cycle from D.",
+      "origin": "A",
+      "originLevel": "IMPASSABLE",
+      "config": { "maxHops": 3, "requireConfirmedEdges": true },
+      "edgeOverrides": [],
+      "expected": [
+        { "target": "B", "level": "KNEE",  "etaMinutes": 20, "hops": 1, "pathConfirmed": true },
+        { "target": "C", "level": "ANKLE", "etaMinutes": 35, "hops": 2, "pathConfirmed": true },
+        { "target": "E", "level": "ANKLE", "etaMinutes": 50, "hops": 2, "pathConfirmed": true }
+      ]
+    },
+    {
+      "id": 2,
+      "description": "origin A, ANKLE. No alerts at all. ANKLE decays below ANKLE at hop 1.",
+      "origin": "A",
+      "originLevel": "ANKLE",
+      "config": { "maxHops": 3, "requireConfirmedEdges": true },
+      "edgeOverrides": [],
+      "expected": []
+    },
+    {
+      "id": 3,
+      "description": "origin A, IMPASSABLE, edge B to C blocked. C and D unreachable.",
+      "origin": "A",
+      "originLevel": "IMPASSABLE",
+      "config": { "maxHops": 3, "requireConfirmedEdges": true },
+      "edgeOverrides": [
+        { "from": "B", "to": "C", "blocked": true }
+      ],
+      "expected": [
+        { "target": "B", "level": "KNEE",  "etaMinutes": 20, "hops": 1, "pathConfirmed": true },
+        { "target": "E", "level": "ANKLE", "etaMinutes": 50, "hops": 2, "pathConfirmed": true }
+      ]
+    },
+    {
+      "id": 4,
+      "description": "origin A, IMPASSABLE, edge A to B is INFERRED, requireConfirmedEdges true. Same three rows as case 1, but every row has pathConfirmed false. The engine still returns them; the caller suppresses delivery.",
+      "origin": "A",
+      "originLevel": "IMPASSABLE",
+      "config": { "maxHops": 3, "requireConfirmedEdges": true },
+      "edgeOverrides": [
+        { "from": "A", "to": "B", "confidence": "INFERRED" }
+      ],
+      "expected": [
+        { "target": "B", "level": "KNEE",  "etaMinutes": 20, "hops": 1, "pathConfirmed": false },
+        { "target": "C", "level": "ANKLE", "etaMinutes": 35, "hops": 2, "pathConfirmed": false },
+        { "target": "E", "level": "ANKLE", "etaMinutes": 50, "hops": 2, "pathConfirmed": false }
+      ]
+    },
+    {
+      "id": 5,
+      "description": "origin D, IMPASSABLE. Proves the cycle is traversable in the other direction and terminates.",
+      "origin": "D",
+      "originLevel": "IMPASSABLE",
+      "config": { "maxHops": 3, "requireConfirmedEdges": true },
+      "edgeOverrides": [],
+      "expected": [
+        { "target": "B", "level": "KNEE",  "etaMinutes": 25, "hops": 1, "pathConfirmed": true },
+        { "target": "C", "level": "ANKLE", "etaMinutes": 40, "hops": 2, "pathConfirmed": true },
+        { "target": "E", "level": "ANKLE", "etaMinutes": 55, "hops": 2, "pathConfirmed": true }
+      ]
+    }
+  ]
+}

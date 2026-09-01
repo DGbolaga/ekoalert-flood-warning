@@ -1,0 +1,12 @@
+# The sweep runs once at startup against an empty database and then not again
+# during a test run. Tests drive de-escalation by calling sweep with an explicit
+# instant, so nothing depends on wall clock timing.
+ekoalert:
+  de-escalation-sweep: PT24H
+  jwt:
+    secret: ekoalert-test-secret-not-used-anywhere-real
+logging:
+  level:
+    org.hibernate.SQL: WARN
+    org.testcontainers: WARN
+    com.github.dockerjava: WARN
