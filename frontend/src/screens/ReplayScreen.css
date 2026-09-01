@@ -1,0 +1,136 @@
+.replay__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-bottom: 14px;
+}
+
+.replay__input {
+  width: 100%;
+  min-height: 180px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--mist);
+  border-radius: var(--r-button);
+  font-family: inherit;
+  font-size: var(--t-15);
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.replay__input:focus {
+  border-color: var(--ink);
+}
+
+/* The one figure that is the argument for the whole confirmation mechanism. */
+.replay__lead {
+  margin-top: 24px;
+  padding: 20px;
+  border: 2px solid var(--ink);
+  border-radius: var(--r-button);
+  background: var(--surface);
+}
+
+.replay__lead-number {
+  font-size: var(--t-56);
+  line-height: 1;
+}
+
+.replay__lead-text {
+  margin-top: 8px;
+  font-size: var(--t-17);
+}
+
+.replay__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 28px;
+  margin-top: 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--mist);
+  border-bottom: 1px solid var(--mist);
+}
+
+.replay__stat-number {
+  font-size: var(--t-22);
+  line-height: 1.1;
+  display: block;
+}
+
+.replay__section {
+  margin-top: 26px;
+}
+
+.replay__section h2 {
+  font-size: var(--t-17);
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--mist);
+}
+
+.tl {
+  position: relative;
+  padding-left: 80px;
+}
+
+.tl::before {
+  content: '';
+  position: absolute;
+  left: 70px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--mist);
+}
+
+.tl__row {
+  position: relative;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--mist);
+}
+
+.tl__time {
+  position: absolute;
+  left: -80px;
+  top: 15px;
+  width: 56px;
+  text-align: right;
+  font-size: var(--t-15);
+}
+
+.tl__pip {
+  position: absolute;
+  left: -14px;
+  top: 20px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+}
+
+.tl__pip--held {
+  border-color: var(--mist);
+}
+
+.tl__row--held {
+  color: var(--slate);
+}
+
+.tl__line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tl__bar {
+  height: 3px;
+  background: var(--mist);
+  border-radius: 2px;
+  margin-top: 10px;
+}
+
+.tl__note {
+  margin-top: 4px;
+  font-size: var(--t-13);
+}

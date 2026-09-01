@@ -1,0 +1,56 @@
+.zs__head {
+  padding-bottom: 4px;
+}
+
+.zs__name {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.zs__status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--mist);
+  border-radius: var(--r-button);
+}
+
+.zs__status--active {
+  border-color: var(--depth);
+  background: var(--wash);
+  color: var(--depth);
+}
+
+.zs__status-text {
+  color: var(--ink);
+}
+
+.zs__section {
+  margin-top: 22px;
+}
+
+.zs__section-title {
+  font-size: var(--t-15);
+  font-weight: 600;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--mist);
+}
+
+.zs__empty {
+  padding: 14px 0;
+  color: var(--slate);
+  font-size: var(--t-15);
+}
+
+.zs__subscribe {
+  margin-top: 18px;
+}
+
+.zs__flag {
+  margin-top: 14px;
+  font-size: var(--t-13);
+  color: var(--slate);
+}

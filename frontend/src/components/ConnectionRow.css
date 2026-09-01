@@ -1,0 +1,87 @@
+.conn {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--mist);
+}
+
+.conn:last-child {
+  border-bottom: none;
+}
+
+.conn__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.conn__names {
+  min-width: 0;
+  flex: 1;
+}
+
+.conn__eta {
+  color: var(--slate);
+  white-space: nowrap;
+}
+
+.conn__actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.conn__tap {
+  flex: 1;
+  min-height: var(--tap);
+  border: 1px solid var(--mist);
+  border-radius: var(--r-button);
+  background: var(--surface);
+  font-size: var(--t-15);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 90ms var(--ease);
+}
+
+.conn__tap:active {
+  transform: translateY(1px);
+}
+
+.conn__tap--on {
+  border-color: var(--ink);
+  border-width: 2px;
+}
+
+.conn__tap[disabled] {
+  color: var(--slate);
+  cursor: default;
+}
+
+.conn__votes {
+  margin-top: 2px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: var(--slate);
+}
+
+.conn__flip {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--ink);
+  border-radius: var(--r-button);
+  font-size: var(--t-15);
+  animation: flip-in 400ms var(--ease);
+}
+
+@keyframes flip-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.conn__error {
+  margin-top: 8px;
+  font-size: var(--t-13);
+  color: var(--ink);
+}

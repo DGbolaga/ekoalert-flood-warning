@@ -1,0 +1,64 @@
+/* Six values plus the depth ramp. Colour means water. Nothing else is saturated. */
+:root {
+  --ink: #14181a;
+  --slate: #5a6468;
+  --mist: #aeb6b8;
+  --paper: #f2f4f3;
+  --surface: #ffffff;
+
+  /* Strokes drawn over the basemap. Distinct from --mist, which is a hairline on
+     --surface: over a tinted basemap that value disappears, especially at night. */
+  --map-line: #aeb6b8;
+
+  --ankle: #c79a2e;
+  --knee: #d2621c;
+  --impassable: #9e2b25;
+
+  /* Tints of the ramp, used only as fills behind their own depth colour. */
+  --ankle-wash: #f6efdd;
+  --knee-wash: #f8e7db;
+  --impassable-wash: #f4dedd;
+
+  --r-sheet: 20px;
+  --r-button: 12px;
+
+  --t-13: 13px;
+  --t-15: 15px;
+  --t-17: 17px;
+  --t-22: 22px;
+  --t-34: 34px;
+  --t-56: 56px;
+
+  --pad: 16px;
+  --tap: 44px;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f2f4f3;
+    --slate: #8b9498;
+    --mist: #3a4245;
+    --paper: #14181a;
+    --surface: #1c2124;
+    --map-line: #77848a;
+
+    --ankle-wash: #2e2718;
+    --knee-wash: #331f13;
+    --impassable-wash: #2e1917;
+
+    color-scheme: dark;
+  }
+}
+
+/* Expanded is reserved for the number that matters and for zone codes. */
+.expanded {
+  font-stretch: 125%;
+  font-variation-settings: 'wdth' 125;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}

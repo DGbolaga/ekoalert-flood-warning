@@ -1,0 +1,69 @@
+.sheet-scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  opacity: 0.18;
+  z-index: 900;
+  border: none;
+  padding: 0;
+  cursor: default;
+}
+
+.sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  height: 86%;
+  max-height: 86%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-top: 1px solid var(--mist);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  transition: transform 260ms var(--ease);
+  touch-action: none;
+  will-change: transform;
+}
+
+.sheet--dragging {
+  transition: none;
+}
+
+.sheet__grip {
+  flex: none;
+  padding: 10px 0 4px;
+  display: grid;
+  place-items: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.sheet__grip-bar {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--mist);
+}
+
+.sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 var(--pad) calc(var(--pad) + env(safe-area-inset-bottom));
+}
+
+.sheet__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: var(--tap);
+  height: var(--tap);
+  display: grid;
+  place-items: center;
+  color: var(--slate);
+  border-radius: var(--r-button);
+}

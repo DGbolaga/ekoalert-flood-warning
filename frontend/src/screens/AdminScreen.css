@@ -1,0 +1,71 @@
+.admin__head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding-bottom: 16px;
+}
+
+/* The kill switch is the first thing on the screen and it is on its own. */
+.kill {
+  border: 2px solid var(--ink);
+  border-radius: var(--r-button);
+  padding: 18px;
+  background: var(--surface);
+}
+
+.kill__state {
+  font-size: var(--t-22);
+  font-weight: 600;
+}
+
+.kill__note {
+  margin-top: 6px;
+  font-size: var(--t-15);
+  color: var(--slate);
+}
+
+.kill__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.kill__actions .btn {
+  flex: 1;
+  min-height: 56px;
+}
+
+.kill__confirm {
+  margin-top: 16px;
+  border-top: 1px solid var(--mist);
+  padding-top: 16px;
+}
+
+.admin__section {
+  margin-top: 28px;
+}
+
+.admin__section h2 {
+  font-size: var(--t-17);
+  font-weight: 600;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--mist);
+}
+
+.admin__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--mist);
+}
+
+.admin__row .btn {
+  min-height: var(--tap);
+  padding: 8px 14px;
+  font-size: var(--t-15);
+}
+
+.admin__id {
+  width: 84px;
+}
