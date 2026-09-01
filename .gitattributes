@@ -1,0 +1,15 @@
+# Normalise text in the repository, and check it out to suit the platform.
+* text=auto
+
+# Windows batch files must keep CRLF or cmd.exe can mishandle them.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Shell scripts and the Maven wrapper must keep LF on every platform.
+*.sh  text eol=lf
+mvnw  text eol=lf
+
+# Binary, never touch.
+*.png binary
+*.jpg binary
+*.ico binary
