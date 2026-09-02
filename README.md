@@ -126,6 +126,7 @@ delivering, the kill switch, and a replay.
 | `BACKEND_BRIEF.md` | Schema, engine contract, quorum rules, test strategy, the golden scenario. |
 | `API_CONTRACT.md` | Every payload, copied from a live server. Authoritative for frontend work. |
 | `FRONTEND_BRIEF.md` | Design direction and screen specs. |
+| `PROJECT_BRIEF.html` | The project explained end to end, for the team and for the defence. Open it in a browser. Non-technical case, statistics, SDG alignment, context diagram, data flow diagram, and the mechanics. |
 | `backend/README.md` | How to build, run and change the backend. |
 | `frontend/README.md` | Frontend layout, and the contract gaps it works around. |
 | `ekoalert_zones.csv` | The seeded graph, with a column-by-column note on where each value came from. |
