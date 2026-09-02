@@ -8,13 +8,14 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { API_BASE, getGraph } from '../api/client';
+import { API_BASE, getGraph, getPlaces } from '../api/client';
 import type {
   AlertEvent,
   AllClearEvent,
   AlertView,
   EdgeView,
   GraphCounts,
+  PlaceView,
   ZoneStatusEvent,
   ZoneSummary,
 } from '../api/types';
@@ -35,6 +36,8 @@ interface LiveValue {
   edges: EdgeView[];
   counts?: GraphCounts;
   zoneById: Map<string, ZoneSummary>;
+  /** Places residents have named that are not zones yet. Drawn provisionally. */
+  places: PlaceView[];
   loading: boolean;
   loadError?: string;
   stream: StreamState;
@@ -44,6 +47,11 @@ interface LiveValue {
   putEdge: (edge: EdgeView) => void;
   /** Record alerts the report response returned, including suppressed ones. */
   recordAlerts: (alerts: AlertView[]) => void;
+  /**
+   * Fold a place response back in. A promotion carries a real zone and edge, so
+   * it graduates out of the pending list and into the graph in one step.
+   */
+  putPlace: (place: PlaceView) => void;
 }
 
 const LiveContext = createContext<LiveValue | undefined>(undefined);
@@ -93,6 +101,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   const [loadError, setLoadError] = useState<string | undefined>();
   const [stream, setStream] = useState<StreamState>('connecting');
   const [activity, setActivity] = useState<ActivityItem[]>(readActivity);
+  const [places, setPlaces] = useState<PlaceView[]>([]);
 
   const refresh = useCallback(async () => {
     try {
@@ -101,6 +110,13 @@ export function LiveProvider({ children }: { children: ReactNode }) {
       setEdges(graph.edges);
       setCounts(graph.counts);
       setLoadError(undefined);
+      // Pending places are a separate call, and a failure there must not blank
+      // the map. The graph is the thing people came for.
+      try {
+        setPlaces(await getPlaces());
+      } catch {
+        /* leave whatever pending places we already had */
+      }
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'The map could not be loaded.');
     } finally {
@@ -211,6 +227,30 @@ export function LiveProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const putPlace = useCallback((place: PlaceView) => {
+    if (place.promoted) {
+      // It is a zone now. Drop it from the provisional layer and put the zone
+      // and its inferred edge straight into the graph.
+      setPlaces((current) => current.filter((p) => p.id !== place.id));
+      if (place.zone) {
+        setZones((current) =>
+          current.some((z) => z.id === place.zone!.id) ? current : [...current, place.zone!],
+        );
+      }
+      if (place.edge) {
+        const edge = place.edge;
+        setEdges((current) =>
+          current.some((e) => e.id === edge.id) ? current : [...current, edge],
+        );
+      }
+      return;
+    }
+    setPlaces((current) => {
+      const index = current.findIndex((p) => p.id === place.id);
+      return index === -1 ? [...current, place] : current.map((p) => (p.id === place.id ? place : p));
+    });
+  }, []);
+
   const recordAlerts = useCallback(
     (alerts: AlertView[]) => {
       alerts.forEach((alert) =>
@@ -249,6 +289,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
       edges,
       counts,
       zoneById,
+      places,
       loading,
       loadError,
       stream,
@@ -256,8 +297,10 @@ export function LiveProvider({ children }: { children: ReactNode }) {
       refresh,
       putEdge,
       recordAlerts,
+      putPlace,
     }),
-    [zones, edges, counts, zoneById, loading, loadError, stream, activity, refresh, putEdge, recordAlerts],
+    [zones, edges, counts, zoneById, places, loading, loadError, stream, activity, refresh,
+     putEdge, recordAlerts, putPlace],
   );
 
   return <LiveContext.Provider value={value}>{children}</LiveContext.Provider>;

@@ -360,6 +360,107 @@ On the tap that crosses the threshold the edge is created, and it arrives
             "inferenceBasis": "resident proposal, timing estimated at 55 m/min pending observation" } }
 ```
 
+## Naming a place the map does not have
+
+Correcting an edge assumes both of its ends already exist. Often neither does:
+the pilot stops at 20 seeded zones and water does not, so the honest answer to
+"where does it go next" is frequently somewhere the graph has never heard of.
+
+Two things can be missing, and they go missing separately. The **landmark** is
+what people call it, and is required, because a place nobody can name is a place
+nobody can corroborate. The **position** is optional, because the person who
+knows the name is not always the person standing there. A place needs both
+before it can be promoted, which is why an affirmation is allowed to carry the
+GPS the original proposal lacked.
+
+### `GET /places`
+
+Public, like the graph. A pending place nobody can see is a place nobody can
+corroborate, and corroboration is the whole mechanism.
+
+```json
+[ { "id": 1, "landmark": "Alapere Bus Stop", "located": false, "fromZone": "Z21",
+    "status": "pending", "distinctVoices": 1, "threshold": 2,
+    "promoted": false, "mergedInto": false, "proposedAt": "2026-09-02T08:14:06Z" } ]
+```
+
+`lat` and `lng` are absent while `located` is false. Draw only the located ones.
+
+### `POST /places/propose`
+
+Reporter only. `lat` and `lng` may both be omitted.
+
+```json
+{ "fromZone": "Z21", "landmark": "Alapere Bus Stop", "lat": 6.5579, "lng": 3.4164 }
+```
+
+Below the threshold it stays pending and no zone exists yet:
+```json
+{ "id": 1, "landmark": "Alapere Bus Stop", "located": true, "fromZone": "Z21",
+  "status": "pending", "distinctVoices": 1, "threshold": 2,
+  "promoted": false, "mergedInto": false, "proposedAt": "2026-09-02T08:14:06Z" }
+```
+
+400 with `bad_request` for an unknown `fromZone`, a blank landmark, or a position
+that fails either sanity check below.
+
+**A position is checked against the origin zone before it is accepted.** Both
+failures return `bad_request` with a message written for the person:
+
+| Condition | Why |
+|---|---|
+| within `placeMergeMetres` (250 m) of `fromZone` | the claim would say water flows from a zone to itself |
+| beyond `maxProposedPlaceMetres` (5 km) of `fromZone` | at the provisional flow rate that is already 90 minutes, past the range a two hop prediction is useful over, and in practice it means a phone reported where its owner is standing rather than where the place is |
+
+The second is the common failure and worth designing the client around: device GPS
+answers "where am I", which is only the same question as "where is the place" when
+the person is standing in it. Someone recognising a street two zones away on the
+map is doing something GPS cannot help with. Offer a way to point at the spot.
+
+### `POST /places/{id}/affirm`
+
+Reporter only. A second separate resident saying the place is real. The body is
+optional, and supplies the position if the proposal has none yet.
+
+```json
+{ "lat": 6.5579, "lng": 3.4164 }
+```
+
+On the tap that crosses the threshold, **and only if the place has a position**,
+it is promoted. The response then carries the zone it became and the edge to it:
+
+```json
+{ "id": 1, "landmark": "Alapere Bus Stop", "located": true, "fromZone": "Z21",
+  "status": "promoted", "distinctVoices": 2, "threshold": 2,
+  "promoted": true, "mergedInto": false,
+  "zone": { "id": "Z22", "corridor": "Agboyi Creek", "landmark": "Alapere Bus Stop",
+            "displayName": "Alapere Bus Stop", "lat": 6.5579, "lng": 3.4164,
+            "needsFieldNaming": false, "status": { "active": false } },
+  "edge": { "id": 20, "fromZone": "Z21", "toZone": "Z22", "travelMinutes": 24,
+            "distanceM": 1295, "confidence": "INFERRED", "alertable": false,
+            "inferenceBasis": "resident proposal, timing estimated at 55 m/min pending observation" } }
+```
+
+Two things to hold on to. The new zone's `corridor` is inherited from `fromZone`,
+because nobody has surveyed which corridor it sits on and the origin is the only
+evidence there is. And the edge arrives `INFERRED`, so naming a place warns
+nobody until that edge is separately confirmed.
+
+**`mergedInto: true` means the place was already a zone.** Residents routinely
+name a seeded zone by the name people actually use for it, which is the field
+survey happening rather than a duplicate. When a promoted place lands within 250
+metres of an existing zone, no new zone is created: the existing one is returned,
+and if it had no `landmark` it now carries the resident's. Its coordinates and
+its id do not move.
+
+```json
+{ "id": 2, "landmark": "Ogudu Ori-Oke", "status": "promoted", "promoted": true,
+  "mergedInto": true,
+  "zone": { "id": "Z11", "landmark": "Ogudu Ori-Oke", "displayName": "Ogudu Ori-Oke", "...": "unchanged position" } }
+```
+
+A promoted place stops appearing in `GET /places`.
+
 ## Admin actions
 
 Need an `ADMIN` token. A `REPORTER` token gets 403.
@@ -583,6 +684,18 @@ export interface CorrectionResponse {
   edge?: EdgeView;                    // absent for a proposal below threshold
 }
 
+export interface PlaceView {
+  id: number; landmark: string; lat?: number; lng?: number;
+  located: boolean;                   // false until somebody has stood there
+  fromZone: string; status: 'pending' | 'promoted' | 'rejected';
+  distinctVoices: number; threshold: number;
+  promoted: boolean;
+  mergedInto: boolean;                // it was already a zone, under a local name
+  proposedAt: string;
+  zone?: ZoneSummary;                 // absent until promoted
+  edge?: EdgeView;                    // absent until promoted, arrives INFERRED
+}
+
 export interface SubscriptionResponse { id: number; zoneId: string; channel: string; address: string; }
 
 // Server-sent events
@@ -607,6 +720,9 @@ export interface ConnectedEvent  { zones: string[]; at: string; }
 | POST | `/edges/{id}/confirm` | reporter | 200 |
 | POST | `/edges/{id}/reject` | reporter | 200 |
 | POST | `/edges/propose` | reporter | 200 |
+| GET | `/places` | public | 200 |
+| POST | `/places/propose` | reporter | 200 |
+| POST | `/places/{id}/affirm` | reporter | 200 |
 | POST | `/admin/kill-switch` | admin | 200 |
 | POST | `/admin/reporters/{id}/suspend` | admin | 200 |
 | POST | `/replay` | admin | 200 |

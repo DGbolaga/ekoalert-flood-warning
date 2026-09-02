@@ -48,7 +48,8 @@ and it is the defence demo.
 | Quorum, escalation, de-escalation, all-clears | Done |
 | Kill switch and replay mode | Done |
 | React frontend: map, reporting, corrections, admin | Done |
-| Backend test suite | 114 tests passing |
+| Residents naming places the graph has no node for | Done |
+| Backend test suite | 125 tests passing |
 
 The seeded pilot graph is 20 zones and 17 edges along three corridors in the
 Ojota to Ogudu to Bariga area.
@@ -138,6 +139,9 @@ Known and deliberate:
   which falls back to the zone id.
 - **Junction edges between the three corridors do not exist.** Inference is worst
   at exactly the edges that matter most, so they were left blank on purpose.
+  Residents fill them in from the map: one tap to connect two zones the graph
+  already has, or a name and a GPS fix for somewhere it does not. Nothing lands
+  on the graph on one person's say-so, and what does land arrives `inferred`.
   `POST /edges/propose` is the way residents add them.
 - **Four zones are flagged `needs_field_naming`.** They sit more than 2 km from
   any named place in OpenStreetMap. They are not empty land, they need a person.

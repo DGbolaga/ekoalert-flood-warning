@@ -1,0 +1,93 @@
+.pp {
+  position: relative;
+  margin-top: 12px;
+  border: 1px solid var(--mist);
+  border-radius: var(--r-button);
+  overflow: hidden;
+}
+
+.pp__map {
+  height: 220px;
+  width: 100%;
+  background: var(--paper);
+}
+
+/* Fixed to the frame, not to the map, which is the whole trick: the map moves
+   under the cross so the chosen point is exact rather than tap sized. */
+.pp__cross {
+  position: absolute;
+  top: 110px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 500;
+}
+
+.pp__cross::before,
+.pp__cross::after {
+  content: '';
+  position: absolute;
+  background: var(--ink);
+}
+
+.pp__cross::before {
+  width: 1px;
+  height: 30px;
+  left: -0.5px;
+  top: -15px;
+}
+
+.pp__cross::after {
+  width: 30px;
+  height: 1px;
+  top: -0.5px;
+  left: -15px;
+}
+
+.pp__cross-ring {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: -8px;
+  top: -8px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: transparent;
+}
+
+/* The origin zone, so the cross is placed against something known. */
+.pp__origin {
+  background: none;
+  border: none;
+}
+
+.pp__origin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--slate);
+  background: var(--surface);
+}
+
+/* Stacked, not side by side: at 390 px the distance and the instruction each
+   want a full line, and wrapping them into two ragged columns made the readout
+   harder to read than either line alone. */
+.pp__readout {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--mist);
+  background: var(--surface);
+}
+
+.pp__readout-dist {
+  font-size: var(--t-15);
+  font-weight: 600;
+}
+
+.pp__readout-hint {
+  font-size: var(--t-13);
+  color: var(--slate);
+}

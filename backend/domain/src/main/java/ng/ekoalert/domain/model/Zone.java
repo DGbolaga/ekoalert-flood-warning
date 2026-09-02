@@ -20,6 +20,9 @@ import java.time.Instant;
 @Table(name = "zone")
 public class Zone {
 
+    public static final String SEED = "seed";
+    public static final String RESIDENT = "resident";
+
     @Id
     private String id;
 
@@ -35,6 +38,15 @@ public class Zone {
 
     @Column(name = "needs_field_naming", nullable = false)
     private boolean needsFieldNaming;
+
+    /**
+     * How this zone got here. A seeded zone was inferred from OSM waterway
+     * geometry; a resident zone was named by somebody standing in it. The second
+     * is the stronger provenance, and the pilot needs to be able to tell them
+     * apart.
+     */
+    @Column(nullable = false)
+    private String source = SEED;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
@@ -53,9 +65,15 @@ public class Zone {
         return new ZoneId(id);
     }
 
-    /** The display label residents see. Falls back to the id while the survey is outstanding. */
+    /**
+     * The display label residents see. A surveyed name wins; failing that a
+     * landmark a resident gave, which is the whole point of letting them name
+     * places; failing both, the id, so the label is never invented.
+     */
     public String displayName() {
-        return name != null && !name.isBlank() ? name : id;
+        if (name != null && !name.isBlank()) return name;
+        if (landmark != null && !landmark.isBlank()) return landmark;
+        return id;
     }
 
     public String getId() {
@@ -88,6 +106,14 @@ public class Zone {
 
     public void setLocation(Point location) {
         this.location = location;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public boolean isNeedsFieldNaming() {

@@ -1,11 +1,17 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './map.css';
-import type { EdgeView, ZoneSummary } from '../api/types';
+import type { EdgeView, PlaceView, ZoneSummary } from '../api/types';
 import { SEVERITY_HEX, SEVERITY_WORD } from '../lib/severity';
 import { depthGlyphMarkup } from '../components/DepthGlyph';
-import { boundsOf, edgeGeometry } from './geometry';
+import {
+  boundsOf,
+  catchmentRadii,
+  corridorHeads,
+  edgeGeometry,
+  terminusZoneIds,
+} from './geometry';
 
 /**
  * The basemap has to be near monochrome so that zone status is the only colour on
@@ -29,7 +35,7 @@ const KEYED_LIGHT = import.meta.env.VITE_TILE_URL_LIGHT;
 const KEYED_DARK = import.meta.env.VITE_TILE_URL_DARK;
 const KEYED_ATTRIBUTION = import.meta.env.VITE_TILE_ATTRIBUTION;
 
-function tileSource(dark: boolean): { url: string; attribution: string } {
+export function tileSource(dark: boolean): { url: string; attribution: string } {
   if (KEYED_LIGHT && KEYED_DARK) {
     return {
       url: dark ? KEYED_DARK : KEYED_LIGHT,
@@ -42,6 +48,15 @@ function tileSource(dark: boolean): { url: string; attribution: string } {
   };
 }
 
+/** Below this zoom the travel-time labels have no room and only add noise. */
+const TIME_LABEL_ZOOM = 13;
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"]/g, (c) =>
+    c === '&' ? '&amp;' : c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&quot;',
+  );
+}
+
 function readToken(name: string, fallback: string): string {
   const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   return value.length > 0 ? value : fallback;
@@ -50,7 +65,10 @@ function readToken(name: string, fallback: string): string {
 export interface FloodMapProps {
   zones: ZoneSummary[];
   edges: EdgeView[];
+  /** Resident-named places that are not zones yet. Only the located ones can be drawn. */
+  places?: PlaceView[];
   onSelectZone: (zoneId: string) => void;
+  onSelectPlace?: (place: PlaceView) => void;
   onSelectEdge: (edge: EdgeView) => void;
   selectedZoneId?: string;
   /** Set to the id of an edge that has just crossed the confirmation threshold. */
@@ -61,7 +79,9 @@ export interface FloodMapProps {
 export function FloodMap({
   zones,
   edges,
+  places,
   onSelectZone,
+  onSelectPlace,
   onSelectEdge,
   selectedZoneId,
   celebrateEdgeId,
@@ -69,11 +89,15 @@ export function FloodMap({
 }: FloodMapProps) {
   const holder = useRef<HTMLDivElement | null>(null);
   const map = useRef<L.Map | null>(null);
+  const haloLayer = useRef<L.LayerGroup | null>(null);
   const edgeLayer = useRef<L.LayerGroup | null>(null);
   const zoneLayer = useRef<L.LayerGroup | null>(null);
+  const placeLayer = useRef<L.LayerGroup | null>(null);
+  const labelLayer = useRef<L.LayerGroup | null>(null);
   const edgePaths = useRef(new Map<number, L.Polyline>());
   const edgeArrows = useRef(new Map<number, L.Marker>());
   const fitted = useRef(false);
+  const [zoom, setZoom] = useState(12);
 
   const handlers = useRef({ onSelectZone, onSelectEdge });
   handlers.current = { onSelectZone, onSelectEdge };
@@ -106,16 +130,30 @@ export function FloodMap({
     };
     dark.addEventListener('change', swapTiles);
 
+    // Order matters: halos sit under the edges, labels over everything.
+    haloLayer.current = L.layerGroup().addTo(instance);
     edgeLayer.current = L.layerGroup().addTo(instance);
     zoneLayer.current = L.layerGroup().addTo(instance);
+    placeLayer.current = L.layerGroup().addTo(instance);
+    labelLayer.current = L.layerGroup().addTo(instance);
     map.current = instance;
+
+    // Seventeen travel-time labels fight each other at the fitted zoom, so they
+    // only appear once the map is close enough for them to have room.
+    const trackZoom = () => setZoom(instance.getZoom());
+    instance.on('zoomend', trackZoom);
+    setZoom(instance.getZoom());
 
     return () => {
       dark.removeEventListener('change', swapTiles);
+      instance.off('zoomend', trackZoom);
       instance.remove();
       map.current = null;
+      haloLayer.current = null;
       edgeLayer.current = null;
       zoneLayer.current = null;
+      placeLayer.current = null;
+      labelLayer.current = null;
     };
   }, []);
 
@@ -143,21 +181,17 @@ export function FloodMap({
       const confirmed = edge.confidence === 'CONFIRMED';
       const stroke = confirmed ? ink : mist;
 
-      const path = L.polyline(
-        [
-          [geometry.from.lat, geometry.from.lng],
-          [geometry.to.lat, geometry.to.lng],
-        ],
-        {
-          color: stroke,
-          weight: confirmed ? 2.5 : 2,
-          opacity: confirmed ? (edge.blocked ? 0.5 : 1) : 0.6,
-          dashArray: confirmed ? undefined : '5 5',
-          lineCap: 'round',
-          interactive: true,
-          bubblingMouseEvents: false,
-        },
-      );
+      // The curve, not a straight line. See the note on BEND in geometry.ts.
+      const path = L.polyline(geometry.points, {
+        color: stroke,
+        weight: confirmed ? 2.5 : 2.25,
+        opacity: confirmed ? (edge.blocked ? 0.5 : 1) : 0.75,
+        dashArray: confirmed ? undefined : '5 5',
+        lineCap: 'round',
+        lineJoin: 'round',
+        interactive: true,
+        bubblingMouseEvents: false,
+      });
 
       path.on('click', (event) => {
         L.DomEvent.stop(event);
@@ -179,7 +213,7 @@ export function FloodMap({
             iconAnchor: [7, 7],
             html:
               `<svg class="edge-arrow" width="14" height="14" viewBox="0 0 14 14" ` +
-              `style="transform: rotate(${geometry.angle}deg); opacity:${edge.blocked ? 0.5 : 1}">` +
+              `style="transform: rotate(${geometry.headAngle}deg); opacity:${edge.blocked ? 0.5 : 1}">` +
               `<path d="M2 2 L11 7 L2 12 Z" fill="${stroke}"/></svg>`,
           }),
         });
@@ -199,13 +233,86 @@ export function FloodMap({
             iconAnchor: [8, 8],
             html:
               `<svg width="16" height="16" viewBox="0 0 16 16" ` +
-              `style="transform: rotate(${geometry.angle + 90}deg)">` +
+              `style="transform: rotate(${geometry.midAngle + 90}deg)">` +
               `<rect x="7" y="1" width="2.5" height="14" rx="1.25" fill="${stroke}"/></svg>`,
           }),
         }).addTo(layer);
       }
+
+      // The number is what the line actually claims: not a route, a delay. Saying
+      // it on the line is the most direct way to stop it being read as a street.
+      if (zoom >= TIME_LABEL_ZOOM) {
+        L.marker(geometry.apex, {
+          interactive: false,
+          keyboard: false,
+          zIndexOffset: 500,
+          icon: L.divIcon({
+            className: 'edge-deco',
+            iconSize: [56, 20],
+            iconAnchor: [28, 10],
+            html:
+              `<span class="edge-time${confirmed ? '' : ' edge-time--inferred'}">` +
+              `${edge.travelMinutes} min</span>`,
+          }),
+        }).addTo(layer);
+      }
     });
-  }, [edges, zones]);
+  }, [edges, zones, zoom]);
+
+  /* Catchment halos. ------------------------------------------------------ */
+  useEffect(() => {
+    const layer = haloLayer.current;
+    if (!layer) return;
+
+    layer.clearLayers();
+    const radii = catchmentRadii(zones);
+    const mist = readToken('--map-line', '#AEB6B8');
+
+    zones.forEach((zone) => {
+      const radius = radii.get(zone.id);
+      if (radius === undefined) return;
+
+      // A rough catchment, not a boundary. Derived from the spacing between
+      // zones, drawn soft and dashed so it never reads as a surveyed line, and
+      // non-interactive so it never steals a tap from the marker inside it.
+      // Deliberately not dashed. A dash means one thing on this map, an
+      // unconfirmed connection, and a ring of dashes around every zone was
+      // stealing that meaning and drowning the edges in the same grey.
+      L.circle([zone.lat, zone.lng], {
+        radius,
+        color: mist,
+        weight: 1,
+        opacity: 0.3,
+        fillColor: mist,
+        fillOpacity: 0.05,
+        interactive: false,
+      }).addTo(layer);
+    });
+  }, [zones]);
+
+  /* Corridor names. ------------------------------------------------------- */
+  useEffect(() => {
+    const layer = labelLayer.current;
+    if (!layer) return;
+
+    layer.clearLayers();
+
+    // Three corridors with no connections between them is the most important
+    // fact on this map. Naming each chain at its head makes them read as three
+    // named things rather than three accidents.
+    corridorHeads(zones, edges).forEach((head) => {
+      L.marker([head.lat, head.lng], {
+        interactive: false,
+        keyboard: false,
+        icon: L.divIcon({
+          className: 'edge-deco',
+          iconSize: [160, 20],
+          iconAnchor: [80, 34],
+          html: `<span class="corridor-label">${escapeHtml(head.corridor)}</span>`,
+        }),
+      }).addTo(layer);
+    });
+  }, [zones, edges]);
 
   /* Zones. ---------------------------------------------------------------- */
   useEffect(() => {
@@ -214,11 +321,15 @@ export function FloodMap({
 
     layer.clearLayers();
     const ink = readToken('--ink', '#14181A');
+    const termini = terminusZoneIds(zones, edges);
 
     zones.forEach((zone) => {
       const active = zone.status.active && zone.status.level !== undefined;
       const level = zone.status.level;
       const selected = zone.id === selectedZoneId;
+      // Nothing has been recorded downstream of this zone. Not missing data: an
+      // open question, and the one residents are best placed to answer.
+      const terminus = termini.has(zone.id);
 
       const html = active && level
         ? `<div class="zone-marker__active" style="--depth:${SEVERITY_HEX[level]};` +
@@ -226,7 +337,8 @@ export function FloodMap({
           '<span class="zone-marker__pulse"></span>' +
           depthGlyphMarkup(level, 20, SEVERITY_HEX[level]) +
           '</div>'
-        : `<div class="zone-marker__dot" style="${selected ? `border-color:${ink};border-width:3px;` : ''}"></div>`;
+        : `<div class="zone-marker__dot${terminus ? ' zone-marker__dot--terminus' : ''}" ` +
+          `style="${selected ? `border-color:${ink};border-width:3px;` : ''}"></div>`;
 
       const size = active ? 38 : 16;
 
@@ -251,10 +363,45 @@ export function FloodMap({
           handlers.current.onSelectZone(zone.id);
         }
       });
-      marker.bindTooltip(zoneTitle(zone), { direction: 'top', offset: [0, -size / 2] });
+      marker.bindTooltip(terminus ? `${zoneTitle(zone)}. The map stops here.` : zoneTitle(zone), {
+        direction: 'top',
+        offset: [0, -size / 2],
+      });
       marker.addTo(layer);
     });
-  }, [zones, selectedZoneId]);
+  }, [zones, edges, selectedZoneId]);
+
+  /* Places residents have named, not yet zones. --------------------------- */
+  useEffect(() => {
+    const layer = placeLayer.current;
+    if (!layer) return;
+
+    layer.clearLayers();
+    // A place nobody has pinned has no position to draw. It is still real and
+    // still counts; it just cannot appear here until somebody stands at it.
+    (places ?? [])
+      .filter((place) => place.located && place.lat !== undefined && place.lng !== undefined)
+      .forEach((place) => {
+        const marker = L.marker([place.lat as number, place.lng as number], {
+          keyboard: true,
+          title: place.landmark,
+          alt: place.landmark,
+          riseOnHover: true,
+          icon: L.divIcon({
+            className: 'place-marker',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+            html: '<div class="place-marker__dot"></div>',
+          }),
+        });
+        marker.bindTooltip(
+          `${place.landmark}. Named by ${place.distinctVoices} of ${place.threshold} people, not on the map yet.`,
+          { direction: 'top', offset: [0, -9] },
+        );
+        if (onSelectPlace) marker.on('click', () => onSelectPlace(place));
+        marker.addTo(layer);
+      });
+  }, [places, onSelectPlace]);
 
   /* Fit to the network once the zones are in. ----------------------------- */
   useEffect(() => {

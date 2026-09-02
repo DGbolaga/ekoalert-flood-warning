@@ -108,18 +108,10 @@ public class EdgeCorrectionService {
             return new CorrectionOutcome(correction, null, voices, false, null);
         }
 
-        DrainageEdge created = edges.save(buildProposedEdge(from, to));
+        DrainageEdge created = edges.save(ProposedEdges.inferred(from, to, properties));
         log.info("edge {} to {} created from {} resident proposals, seeded inferred",
                 fromZone, toZone, voices);
         return new CorrectionOutcome(correction, created, voices, true, created.getConfidence());
     }
 
-    private DrainageEdge buildProposedEdge(Zone from, Zone to) {
-        int distance = (int) Math.round(Geo.metresBetween(from.getLocation(), to.getLocation()));
-        int minutes = Math.max(properties.getMinTravelMinutes(),
-                Math.round((float) distance / properties.getFlowRateMetersPerMinute()));
-        return new DrainageEdge(from.getId(), to.getId(), minutes, distance,
-                "resident proposal, timing estimated at "
-                        + properties.getFlowRateMetersPerMinute() + " m/min pending observation");
-    }
 }

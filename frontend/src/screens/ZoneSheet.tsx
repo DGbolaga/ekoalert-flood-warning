@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import './ZoneSheet.css';
 import { Sheet } from '../components/Sheet';
 import { ConnectionRow } from '../components/ConnectionRow';
+import { ProposeJunction } from '../components/ProposeJunction';
 import { DepthGlyph, ClearGlyph } from '../components/DepthGlyph';
 import { ApiError, getZone, isOffline, subscribe } from '../api/client';
 import type { CorrectionResponse, EdgeView, ZoneDetail } from '../api/types';
@@ -25,7 +26,7 @@ export function ZoneSheet({
   onEdgeFlipped: (edgeId: number) => void;
 }) {
   const { isReporter } = useAuth();
-  const { putEdge, zoneById } = useLive();
+  const { putEdge, zoneById, zones, places, putPlace } = useLive();
   const [detail, setDetail] = useState<ZoneDetail | undefined>();
   const [state, setState] = useState<'loading' | 'ready' | 'missing' | 'error'>('loading');
   const [message, setMessage] = useState<string | undefined>();
@@ -66,19 +67,47 @@ export function ZoneSheet({
             e.id === edge.id
               ? {
                   ...edge,
-                  // Vote counts only exist on the zone detail, so carry the fresh
-                  // number across from the correction rather than losing it.
-                  confirmations:
-                    response.action === 'confirm' ? response.distinctVoices : e.confirmations,
-                  rejections: response.action === 'reject' ? response.distinctVoices : e.rejections,
+                  // The response carries both tallies, because one tap moves
+                  // both: a reporter's latest stance replaces their earlier one,
+                  // so rejecting drops their confirmation at the same time.
+                  confirmations: edge.confirmations ?? e.confirmations,
+                  rejections: edge.rejections ?? e.rejections,
                 }
               : e,
           );
-        return { ...current, outbound: swap(current.outbound), inbound: swap(current.inbound) };
+        const known =
+          current.outbound.some((e) => e.id === edge.id) ||
+          current.inbound.some((e) => e.id === edge.id);
+        const next = {
+          ...current,
+          outbound: swap(current.outbound),
+          inbound: swap(current.inbound),
+        };
+        // A proposal that crosses the threshold creates an edge the sheet has
+        // never seen, so swapping alone would drop it on the floor.
+        if (!known) {
+          if (edge.fromZone === current.zone.id) next.outbound = [...next.outbound, edge];
+          else if (edge.toZone === current.zone.id) next.inbound = [...next.inbound, edge];
+        }
+        return next;
       });
       if (response.thresholdMet) onEdgeFlipped(edge.id);
     },
     [putEdge, onEdgeFlipped],
+  );
+
+  const applyPlace = useCallback(
+    (place: import('../api/types').PlaceView) => {
+      putPlace(place);
+      const edge = place.edge;
+      if (!edge) return;
+      setDetail((current) => {
+        if (!current || current.outbound.some((e) => e.id === edge.id)) return current;
+        return { ...current, outbound: [...current.outbound, edge] };
+      });
+      if (place.promoted) onEdgeFlipped(edge.id);
+    },
+    [putPlace, onEdgeFlipped],
   );
 
   const zone = detail?.zone ?? (zoneId ? zoneById.get(zoneId) : undefined);
@@ -133,6 +162,16 @@ export function ZoneSheet({
                 onNeedsSignIn={onNeedsSignIn}
                 onCorrected={applyCorrection}
                 focusEdgeId={focusEdgeId}
+              />
+              <ProposeJunction
+                zone={detail.zone}
+                outbound={detail.outbound}
+                zones={zones}
+                places={places}
+                canCorrect={isReporter}
+                onNeedsSignIn={onNeedsSignIn}
+                onProposed={applyCorrection}
+                onPlaceChanged={applyPlace}
               />
             </>
           )}

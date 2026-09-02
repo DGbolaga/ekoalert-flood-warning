@@ -90,7 +90,8 @@ public abstract class IntegrationTestBase {
     void resetDatabase() {
         jdbc.execute("""
                 TRUNCATE alert_delivery, alert, edge_correction, report, zone_status,
-                         subscription, app_user, reporter, edge, zone
+                         subscription, app_user, proposed_place_voice, proposed_place,
+                         reporter, edge, zone
                 RESTART IDENTITY CASCADE
                 """);
         jdbc.update("UPDATE system_flag SET value = 'true' WHERE key = 'alerts_enabled'");

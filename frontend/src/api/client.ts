@@ -3,6 +3,7 @@ import type {
   GraphResponse,
   KillSwitchResponse,
   LoginResponse,
+  PlaceView,
   ReplayRequest,
   ReplayResponse,
   ReportRequest,
@@ -172,6 +173,30 @@ export const proposeEdge = (fromZone: string, toZone: string) =>
   request<CorrectionResponse>('/edges/propose', {
     method: 'POST',
     body: { fromZone, toZone },
+    auth: true,
+  });
+
+/* Places ------------------------------------------------------------------- */
+
+/** Pending places are public: one nobody can see is one nobody can corroborate. */
+export const getPlaces = (signal?: AbortSignal) =>
+  request<PlaceView[]>('/places', { signal });
+
+export const proposePlace = (
+  fromZone: string,
+  landmark: string,
+  at?: { lat: number; lng: number },
+) =>
+  request<PlaceView>('/places/propose', {
+    method: 'POST',
+    body: { fromZone, landmark, lat: at?.lat, lng: at?.lng },
+    auth: true,
+  });
+
+export const affirmPlace = (id: number, at?: { lat: number; lng: number }) =>
+  request<PlaceView>(`/places/${id}/affirm`, {
+    method: 'POST',
+    body: { lat: at?.lat, lng: at?.lng },
     auth: true,
   });
 

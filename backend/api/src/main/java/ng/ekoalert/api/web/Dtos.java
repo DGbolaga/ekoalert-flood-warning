@@ -132,6 +132,48 @@ public final class Dtos {
                                      EdgeView edge) {
     }
 
+    // ---------- proposed places ----------
+
+    /**
+     * Naming somewhere the map has no node for. Position is optional: the person
+     * who knows what a place is called is not always the person standing at it.
+     */
+    public record ProposePlaceRequest(@NotBlank String fromZone,
+                                      @NotBlank String landmark,
+                                      Double lat,
+                                      Double lng) {
+    }
+
+    /** Affirming somebody else's place, optionally supplying the position it lacked. */
+    public record AffirmPlaceRequest(Double lat, Double lng) {
+    }
+
+    /**
+     * @param located        false while nobody has supplied a position, which
+     *                       blocks promotion however many voices it has
+     * @param distinctVoices how many separate residents say this place is real
+     * @param promoted       whether this tap was the one that put it on the map
+     * @param mergedInto     true when the place turned out to be an existing zone
+     *                       under a name residents actually use
+     * @param zone           the zone it became, absent until promoted
+     * @param edge           the inferred edge to it, absent until promoted
+     */
+    public record PlaceView(long id,
+                            String landmark,
+                            Double lat,
+                            Double lng,
+                            boolean located,
+                            String fromZone,
+                            String status,
+                            long distinctVoices,
+                            long threshold,
+                            boolean promoted,
+                            boolean mergedInto,
+                            Instant proposedAt,
+                            ZoneSummary zone,
+                            EdgeView edge) {
+    }
+
     // ---------- subscriptions ----------
 
     public record SubscriptionRequest(@NotBlank String zoneId, String channel, @NotBlank String address) {
