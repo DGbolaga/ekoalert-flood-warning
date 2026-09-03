@@ -187,6 +187,28 @@ Seeding is idempotent: `SeedLoader` checks each zone and edge before inserting a
 `SeedCommand` skips users that already exist, so a redeploy re-runs the checks and
 writes nothing.
 
+## Rotating the demo password
+
+`EKOALERT_DEMO_PASSWORD` is read when the accounts are **created**, and seeding is
+idempotent, so changing the variable on a database where `admin`, `ada` and `bola`
+already exist does nothing. They keep the password they were made with. Set it
+before the first deploy and this never comes up.
+
+If you do need to change it later, or you seeded once with the default by mistake,
+delete the logins and let the next start recreate them:
+
+```sql
+DELETE FROM app_user WHERE username IN ('admin', 'ada', 'bola');
+```
+
+Then restart the service. This is safe: `SeedCommand.reporter()` looks the reporter
+up by phone number and reuses the existing row, so the reporters are not duplicated
+and every report and correction already attached to them survives. Only the logins
+are rebuilt, on whatever `EKOALERT_DEMO_PASSWORD` is set to at that moment.
+
+Verified end to end: after deleting the three rows and restarting, the new password
+authenticates, the old one returns 401, and the reporter count is unchanged.
+
 ## Resetting the pilot graph
 
 To put the graph back to its day-one state (20 zones, 17 edges, nothing confirmed,
