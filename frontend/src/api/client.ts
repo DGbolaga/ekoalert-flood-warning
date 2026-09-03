@@ -8,6 +8,7 @@ import type {
   ReplayResponse,
   ReportRequest,
   ReportResponse,
+  ReporterCredentials,
   ReporterView,
   SubscriptionResponse,
   ZoneDetail,
@@ -208,6 +209,27 @@ export const setKillSwitch = (enabled: boolean) =>
     body: { enabled },
     auth: true,
   });
+
+export const listReporters = () =>
+  request<ReporterView[]>('/admin/reporters', { auth: true });
+
+export const createReporter = (body: {
+  zoneId: string;
+  displayName: string;
+  phone: string;
+  username?: string;
+  verified?: boolean;
+}) => request<ReporterCredentials>('/admin/reporters', { method: 'POST', body, auth: true });
+
+export const verifyReporter = (id: number, verified: boolean) =>
+  request<ReporterView>(`/admin/reporters/${id}/verify`, {
+    method: 'POST',
+    body: { verified },
+    auth: true,
+  });
+
+export const resetReporterPassword = (id: number) =>
+  request<ReporterCredentials>(`/admin/reporters/${id}/password`, { method: 'POST', auth: true });
 
 export const suspendReporter = (id: number, suspended: boolean) =>
   request<ReporterView>(`/admin/reporters/${id}/suspend`, {

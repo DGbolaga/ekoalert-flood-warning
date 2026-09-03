@@ -71,6 +71,16 @@ public class Reporter {
         this.verifiedAt = at;
     }
 
+    /**
+     * Undo the vetting itself, as distinct from suspending. A suspension says
+     * this person is set aside for now; revoking says the vetting was wrong.
+     * Both stop the reports counting, and the reports themselves are kept
+     * either way.
+     */
+    public void revokeVerification() {
+        this.verifiedAt = null;
+    }
+
     public boolean isSuspended() {
         return suspended;
     }

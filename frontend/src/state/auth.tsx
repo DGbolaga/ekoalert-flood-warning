@@ -2,7 +2,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -78,7 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(undefined);
   }, []);
 
-  useEffect(() => {
+  // Registered during render, not in an effect. React runs a child's effects
+  // before its parent's, so a screen that loads something on mount would
+  // otherwise fire before the client knew how to find the token, send the
+  // request bare, and take a 401 for a session that was valid all along.
+  // Registration is idempotent: it stores two closures over a stable ref.
+  useMemo(() => {
     configureAuth(
       () => tokenRef.current,
       () => {

@@ -55,6 +55,11 @@ public class AppUser {
         return username;
     }
 
+    /** Only ever a fresh hash. The plain password is shown once and not stored. */
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
+
     public String getPasswordHash() {
         return passwordHash;
     }
