@@ -62,18 +62,23 @@ Either way you end up with a URI like:
 postgresql://myuser:mypassword@ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb?sslmode=require
 ```
 
-**Spring cannot use that string as-is.** It needs the `jdbc:` form, the credentials
-passed separately, and one extra parameter. Split it into three values:
+**Spring cannot use that string as-is.** It needs the `jdbc:` form and the
+credentials passed separately. Split it into three values:
 
 | Variable | Value |
 |---|---|
-| `EKOALERT_DB_URL` | `jdbc:postgresql://ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb?sslmode=require&stringtype=unspecified` |
+| `EKOALERT_DB_URL` | `jdbc:postgresql://ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb?sslmode=require` |
 | `EKOALERT_DB_USER` | `myuser` |
 | `EKOALERT_DB_PASSWORD` | `mypassword` |
 
-`stringtype=unspecified` is not decoration. The schema uses Postgres enum types
-(`edge_confidence`, `severity`), and without it the driver sends a typed varchar
-that the server refuses, so every write of an edge confidence or a severity fails.
+Two changes only: `postgresql://` becomes `jdbc:postgresql://`, and the
+`myuser:mypassword@` in the middle comes out. Keep `?sslmode=require`.
+
+Nothing else needs appending. The schema uses Postgres enum types
+(`edge_confidence`, `severity`) and the driver has to be told to let the server
+coerce text into them, but that is set as a driver property in
+`application.yml`, not as a query parameter you have to remember. A URL missing
+it used to build, start, and then die on the first insert.
 
 > If the driver cannot resolve the Neon endpoint, append
 > `&options=endpoint%3Dep-cool-name-123456` to the URL. Recent PostgreSQL drivers

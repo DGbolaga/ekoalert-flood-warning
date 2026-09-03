@@ -2,12 +2,22 @@ spring:
   application:
     name: ekoalert
   datasource:
-    # stringtype=unspecified lets PostgreSQL coerce the bound text into the
-    # edge_confidence and severity enum columns. Without it the driver sends a
-    # typed varchar and the server refuses it.
-    url: ${EKOALERT_DB_URL:jdbc:postgresql://localhost:5432/ekoalert?stringtype=unspecified}
+    url: ${EKOALERT_DB_URL:jdbc:postgresql://localhost:5432/ekoalert}
     username: ${EKOALERT_DB_USER:ekoalert}
     password: ${EKOALERT_DB_PASSWORD:ekoalert}
+    hikari:
+      data-source-properties:
+        # Lets PostgreSQL coerce bound text into the edge_confidence and
+        # severity enum columns. Without it the driver sends a typed varchar
+        # and the server refuses every write, which strands the app on its
+        # first insert.
+        #
+        # It belongs here rather than in the URL. A managed Postgres hands you
+        # a connection string to paste, and a hand-appended query parameter is
+        # one silent omission away from a deployment that builds, starts, and
+        # then dies seeding. Set as a driver property it holds whatever URL
+        # anyone pastes.
+        stringtype: unspecified
   flyway:
     enabled: true
     locations: classpath:db/migration

@@ -23,9 +23,12 @@ services:
     # all-clears. One instance is a correctness constraint, not thrift.
     numInstances: 1
     envVars:
-      # jdbc:postgresql://HOST/DB?sslmode=require&stringtype=unspecified
-      # stringtype=unspecified is not optional: the schema uses Postgres enums
-      # and without it the driver sends typed varchar and the server refuses.
+      # jdbc:postgresql://HOST/DB?sslmode=require
+      # Neon hands you postgres://user:pass@host/db. Change the scheme to
+      # jdbc:postgresql:// and take the credentials out; they go in the two
+      # variables below. Nothing else to append: the enum handling the schema
+      # needs is a driver property in application.yml, not something a person
+      # has to remember to type.
       - key: EKOALERT_DB_URL
         sync: false
       - key: EKOALERT_DB_USER
