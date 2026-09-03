@@ -1,15 +1,53 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ActivityScreen.css';
 import { DepthGlyph, ClearGlyph } from '../components/DepthGlyph';
 import { useLive, type ActivityItem } from '../state/live';
 import { SEVERITY_WORD, isSeverity } from '../lib/severity';
 import { clockTime, relativeTime } from '../lib/time';
+import { readSubscriptions, SUBS_EVENT } from '../lib/device';
 import type { AlertView } from '../api/types';
+
+/**
+ * Which zone a row is about, from the reader's point of view. A warning belongs
+ * to the place it is warning, not the place the water started, because the
+ * person who asked to hear about Ketu wants Ketu's warnings however far
+ * upstream they were triggered.
+ */
+function subjectZone(item: ActivityItem): string {
+  if (item.kind === 'alert') return item.alert.targetZone;
+  if (item.kind === 'all-clear') return item.event.targetZone;
+  return item.event.zoneId;
+}
+
+/** Subscriptions live in localStorage and can change while this screen is open. */
+function useSubscribedZones(): Set<string> {
+  const [zones, setZones] = useState<Set<string>>(readSubscriptions);
+  useEffect(() => {
+    const sync = () => setZones(readSubscriptions());
+    window.addEventListener(SUBS_EVENT, sync);
+    // Another tab on the same device counts too.
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(SUBS_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+  return zones;
+}
 
 export function ActivityScreen() {
   const { activity, stream, zoneById } = useLive();
   const navigate = useNavigate();
   const label = (id: string) => zoneById.get(id)?.displayName ?? id;
+
+  const subscribed = useSubscribedZones();
+  const [mineOnly, setMineOnly] = useState(true);
+  // Someone who has asked for nothing has no personal feed to show, so the
+  // choice is not offered and the whole corridor is.
+  const filtering = subscribed.size > 0 && mineOnly;
+  const shown = filtering ? activity.filter((i) => subscribed.has(subjectZone(i))) : activity;
+  const hidden = activity.length - shown.length;
 
   return (
     <div className="screen">
@@ -21,14 +59,36 @@ export function ActivityScreen() {
           {stream === 'connecting' && <span className="t13 muted">Connecting</span>}
         </div>
 
-        {activity.length === 0 ? (
+        {subscribed.size > 0 && (
+          <div className="act__scope" role="group" aria-label="Which areas to show">
+            <button
+              type="button"
+              className={`act__scope-btn${mineOnly ? ' act__scope-btn--on' : ''}`}
+              aria-pressed={mineOnly}
+              onClick={() => setMineOnly(true)}
+            >
+              My areas ({subscribed.size})
+            </button>
+            <button
+              type="button"
+              className={`act__scope-btn${mineOnly ? '' : ' act__scope-btn--on'}`}
+              aria-pressed={!mineOnly}
+              onClick={() => setMineOnly(false)}
+            >
+              Everywhere
+            </button>
+          </div>
+        )}
+
+        {shown.length === 0 ? (
           <p className="act__empty">
-            Nothing has happened since you opened this. Alerts and all-clears appear here as they
-            are sent.
+            {activity.length === 0
+              ? 'Nothing has happened since you opened this. Alerts and all-clears appear here as they are sent.'
+              : `Nothing in your areas yet. ${hidden} other ${hidden === 1 ? 'thing has' : 'things have'} happened on the corridor.`}
           </p>
         ) : (
           <div className="act__list">
-            {activity.map((item) => {
+            {shown.map((item) => {
               if (item.kind === 'alert') {
                 return (
                   <AlertRow
@@ -45,6 +105,15 @@ export function ActivityScreen() {
               return <ZoneStatusRow key={item.key} item={item} label={label} />;
             })}
           </div>
+        )}
+
+        {filtering && hidden > 0 && shown.length > 0 && (
+          <p className="act__more t13 muted">
+            {hidden} more elsewhere on the corridor.{' '}
+            <button className="act__link" type="button" onClick={() => setMineOnly(false)}>
+              Show everywhere
+            </button>
+          </p>
         )}
       </div>
     </div>

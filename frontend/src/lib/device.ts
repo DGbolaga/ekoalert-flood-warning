@@ -25,8 +25,17 @@ export function readSubscriptions(): Set<string> {
   }
 }
 
+/**
+ * Subscribing has to reach anything already on screen. The activity feed reads
+ * this list to decide what belongs to you, and it is mounted while the zone
+ * sheet is open, so without a notification it would keep showing the old set
+ * until the next reload.
+ */
+export const SUBS_EVENT = 'ekoalert:subscriptions';
+
 export function rememberSubscription(zoneId: string): void {
   const set = readSubscriptions();
   set.add(zoneId);
   localStorage.setItem(SUBS_KEY, JSON.stringify([...set]));
+  window.dispatchEvent(new CustomEvent(SUBS_EVENT));
 }

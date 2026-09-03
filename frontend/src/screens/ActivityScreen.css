@@ -65,3 +65,34 @@
   color: var(--slate);
   font-size: var(--t-15);
 }
+
+/* Whose activity this is. Only shown once somebody has asked to hear about
+   somewhere, because before that there is no personal feed to choose. */
+.act__scope {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.act__scope-btn {
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--map-line);
+  background: var(--paper);
+  color: var(--ink);
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.act__scope-btn--on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+  opacity: 1;
+}
+
+.act__more {
+  margin-top: 14px;
+}
