@@ -129,7 +129,13 @@ keyed pair only when both light and dark are set.
 ## Checking it worked
 
 ```bash
-API=https://ekoalert-api.onrender.com/api/v1
+HOST=https://ekoalert-api.onrender.com
+API=$HOST/api/v1
+
+# Liveness. This is what Render polls, and it deliberately does not touch the
+# database: a check that queried Postgres every thirty seconds would hold Neon
+# awake around the clock and burn the monthly free compute in days.
+curl -s $HOST/actuator/health          # {"status":"UP"}
 
 # The graph is public, so this needs no token. Expect zones 20, edges 17.
 # On a free instance the first call after 15 minutes idle takes up to a
@@ -170,7 +176,9 @@ disconnected.
   run out it restarts cleanly rather than degrading. If that happens under load,
   that is the signal to move to the paid instance.
 - **Neon scales to zero**, adding roughly half a second to the first query after a
-  quiet spell.
+  quiet spell. That is the intended behaviour and the reason the health check is
+  liveness only: the free plan allows 100 compute-hours a month, and a database
+  held permanently awake needs closer to 180.
 
 ## Rolling back
 

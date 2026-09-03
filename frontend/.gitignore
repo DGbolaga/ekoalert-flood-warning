@@ -3,3 +3,6 @@ dist
 *.tsbuildinfo
 .env
 .env.local
+
+# Throwaway browser-driving scripts, per developer rather than per project.
+.*.mjs

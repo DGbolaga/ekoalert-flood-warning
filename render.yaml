@@ -14,10 +14,10 @@ services:
     plan: free
     # Closest Render region to Lagos.
     region: frankfurt
-    # SecurityConfig permits /actuator/health, but the actuator dependency is not
-    # on the classpath, so that path 404s and the service would never come up
-    # healthy. /api/v1/graph is public and proves the database answers too.
-    healthCheckPath: /api/v1/graph
+    # Liveness only, and deliberately not /api/v1/graph. That endpoint runs three
+    # findAll queries, and a health check runs forever, which would hold Neon
+    # awake around the clock and burn a month of free compute in days.
+    healthCheckPath: /actuator/health
     # The SSE listener list is in memory and the de-escalation sweep has no
     # locking, so a second instance would mean missed alerts and duplicate
     # all-clears. One instance is a correctness constraint, not thrift.

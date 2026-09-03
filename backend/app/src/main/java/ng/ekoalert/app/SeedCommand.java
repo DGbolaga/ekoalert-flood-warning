@@ -25,6 +25,11 @@ import java.util.List;
  * <p>Run with {@code --seed} to load the zones and edges, and additionally
  * {@code --demo-users} to create an admin and two reporters in the same zone so
  * the quorum path can be driven end to end. Both are idempotent.
+ *
+ * <p>Because they are idempotent, {@code ekoalert.demo-password} is read when the
+ * accounts are created and never after. Pointing a deployment at a database that
+ * already has them leaves the old password in place; deleting the three
+ * {@code app_user} rows and restarting rebuilds them on the current value.
  */
 @Component
 public class SeedCommand implements ApplicationRunner {

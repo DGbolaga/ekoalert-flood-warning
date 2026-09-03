@@ -63,6 +63,24 @@ ekoalert:
   # else can reach, because the default is printed in a public README.
   demo-password: ${EKOALERT_DEMO_PASSWORD:ekoalert-demo}
 
+# A platform health check runs forever, so what it costs matters. The database
+# indicator is off deliberately: a managed Postgres that scales to zero would be
+# held awake by the check alone, and on a free tier that exhausts the monthly
+# compute allowance and takes the database down. Liveness is also the honest
+# question, because restarting this process does not repair a database that is
+# down, which is the only thing a failed health check causes.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+  health:
+    db:
+      enabled: false
+
 logging:
   level:
     ng.ekoalert: INFO
