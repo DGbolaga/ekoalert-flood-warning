@@ -1,8 +1,17 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './AdminScreen.css';
-import { ApiError, isOffline, setKillSwitch, suspendReporter } from '../api/client';
-import type { ReporterView } from '../api/types';
+import {
+  ApiError,
+  createReporter,
+  isOffline,
+  listReporters,
+  resetReporterPassword,
+  setKillSwitch,
+  suspendReporter,
+  verifyReporter,
+} from '../api/client';
+import type { ReporterCredentials, ReporterView } from '../api/types';
 import { clockTime } from '../lib/time';
 import { useAuth } from '../state/auth';
 import { useLive } from '../state/live';
@@ -44,7 +53,7 @@ export function AdminScreen() {
           </Link>
         </section>
 
-        <ReporterSuspension />
+        <Reporters />
 
         <section className="admin__section">
           <h2>Zones still waiting on a name</h2>
@@ -174,67 +183,236 @@ function KillSwitch() {
  * No endpoint lists reporters, so this takes the id directly. A suspended
  * reporter's reports are still stored; they just stop counting toward a quorum.
  */
-function ReporterSuspension() {
-  const [id, setId] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<ReporterView | undefined>();
+function Reporters() {
+  const { zones } = useLive();
+  const [list, setList] = useState<ReporterView[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | undefined>();
+  const [adding, setAdding] = useState(false);
+  // Shown once, then gone. Nothing can read it back.
+  const [issued, setIssued] = useState<ReporterCredentials | undefined>();
 
-  const send = async (suspended: boolean) => {
-    const numeric = Number(id);
-    if (!Number.isInteger(numeric) || numeric <= 0) {
-      setError('Enter the reporter id as a whole number.');
-      return;
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      setList(await listReporters());
+      setError(undefined);
+    } catch (err) {
+      setError(describe(err));
+    } finally {
+      setLoading(false);
     }
-    setBusy(true);
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const act = async (run: () => Promise<unknown>) => {
     setError(undefined);
     try {
-      setResult(await suspendReporter(numeric, suspended));
+      await run();
+      await load();
     } catch (err) {
-      if (isOffline(err)) setError('That did not reach the server.');
-      else if (err instanceof ApiError) setError(err.message);
-      else setError('That did not go through.');
-    } finally {
-      setBusy(false);
+      setError(describe(err));
     }
   };
 
   return (
     <section className="admin__section">
-      <h2>Reporter suspension</h2>
+      <h2>Reporters</h2>
       <p className="t15 muted" style={{ padding: '12px 0' }}>
-        A suspended reporter keeps filing, and the reports are still stored, but they stop counting
-        toward a quorum.
+        Only vetted, unsuspended reporters count toward a quorum. Nobody can enrol themselves:
+        two reports have to be two people, or the rule means nothing.
       </p>
-      <div className="row">
-        <input
-          className="field"
-          inputMode="numeric"
-          placeholder="Reporter id"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-          aria-label="Reporter id"
-          style={{ maxWidth: 160 }}
-        />
-        <button className="btn" type="button" onClick={() => void send(true)} disabled={busy}>
-          Suspend
-        </button>
-        <button className="btn btn--quiet" type="button" onClick={() => void send(false)} disabled={busy}>
-          Lift
-        </button>
-      </div>
 
-      {result && (
-        <p className="t15" role="status" style={{ marginTop: 12 }}>
-          {result.displayName}, vetted for {result.zoneId}, is now{' '}
-          {result.suspended ? 'suspended' : 'active again'}.
-        </p>
+      {issued && <IssuedPassword issued={issued} onDismiss={() => setIssued(undefined)} />}
+
+      {adding ? (
+        <AddReporter
+          zoneIds={zones.map((z) => z.id)}
+          onCancel={() => setAdding(false)}
+          onDone={(creds) => {
+            setIssued(creds);
+            setAdding(false);
+            void load();
+          }}
+        />
+      ) : (
+        <button className="btn" type="button" onClick={() => setAdding(true)}>
+          Add a reporter
+        </button>
       )}
+
       {error && (
-        <p className="t15" role="alert" style={{ marginTop: 12 }}>
+        <p className="t13" role="alert" style={{ marginTop: 10 }}>
           {error}
         </p>
       )}
+
+      {loading && list.length === 0 ? (
+        <p className="t15 muted" style={{ paddingTop: 14 }}>
+          Loading.
+        </p>
+      ) : list.length === 0 ? (
+        <p className="t15 muted" style={{ paddingTop: 14 }}>
+          Nobody is enrolled yet.
+        </p>
+      ) : (
+        <ul className="rep__list">
+          {list.map((r) => (
+            <li key={r.id} className="rep">
+              <div className="rep__who">
+                <span className="t17 expanded">{r.displayName}</span>
+                <span className="t13 muted">
+                  {r.zoneId}
+                  {r.username ? ` · signs in as ${r.username}` : ' · no login'}
+                </span>
+                <span className="t13 muted">{statusWord(r)}</span>
+              </div>
+              <div className="rep__acts">
+                <button
+                  className="btn btn--quiet btn--small"
+                  type="button"
+                  onClick={() => void act(() => verifyReporter(r.id, !r.verifiedAt))}
+                >
+                  {r.verifiedAt ? 'Revoke vetting' : 'Vet'}
+                </button>
+                <button
+                  className="btn btn--quiet btn--small"
+                  type="button"
+                  onClick={() => void act(() => suspendReporter(r.id, !r.suspended))}
+                >
+                  {r.suspended ? 'Unblock' : 'Block'}
+                </button>
+                <button
+                  className="btn btn--quiet btn--small"
+                  type="button"
+                  onClick={() =>
+                    void act(async () => setIssued(await resetReporterPassword(r.id)))
+                  }
+                >
+                  New password
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </section>
   );
+}
+
+function statusWord(r: ReporterView): string {
+  if (r.suspended) return 'Blocked. Files reports, none of them count.';
+  if (!r.verifiedAt) return 'Not vetted. Files reports, none of them count.';
+  return 'Vetted. Counts toward a quorum.';
+}
+
+function AddReporter({
+  zoneIds,
+  onCancel,
+  onDone,
+}: {
+  zoneIds: string[];
+  onCancel: () => void;
+  onDone: (creds: ReporterCredentials) => void;
+}) {
+  const [displayName, setDisplayName] = useState('');
+  const [zoneId, setZoneId] = useState(zoneIds[0] ?? '');
+  const [phone, setPhone] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | undefined>();
+
+  const submit = async () => {
+    setBusy(true);
+    setError(undefined);
+    try {
+      onDone(await createReporter({ displayName: displayName.trim(), zoneId, phone: phone.trim() }));
+    } catch (err) {
+      setError(describe(err));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const ready = displayName.trim().length > 1 && phone.trim().length > 5 && zoneId !== '';
+
+  return (
+    <div className="rep__add">
+      <input
+        className="field"
+        placeholder="Name"
+        aria-label="Reporter name"
+        value={displayName}
+        onChange={(e) => setDisplayName(e.target.value)}
+      />
+      <select
+        className="field"
+        aria-label="Zone"
+        value={zoneId}
+        onChange={(e) => setZoneId(e.target.value)}
+      >
+        {zoneIds.map((z) => (
+          <option key={z} value={z}>
+            {z}
+          </option>
+        ))}
+      </select>
+      <input
+        className="field"
+        placeholder="Phone"
+        inputMode="tel"
+        aria-label="Phone"
+        value={phone}
+        onChange={(e) => setPhone(e.target.value)}
+      />
+      <div className="rep__add-acts">
+        <button className="btn" type="button" disabled={!ready || busy} onClick={() => void submit()}>
+          {busy ? 'Adding' : 'Add and vet'}
+        </button>
+        <button className="btn btn--quiet" type="button" onClick={onCancel}>
+          Cancel
+        </button>
+      </div>
+      {error && (
+        <p className="t13" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+/* The one moment this password exists anywhere readable. */
+function IssuedPassword({
+  issued,
+  onDismiss,
+}: {
+  issued: ReporterCredentials;
+  onDismiss: () => void;
+}) {
+  return (
+    <div className="rep__cred" role="status">
+      <p className="t13 muted">Give these to {issued.reporter.displayName}, then dismiss.</p>
+      <p className="rep__cred-line">
+        <span className="t13 muted">username</span> <strong>{issued.username}</strong>
+      </p>
+      <p className="rep__cred-line">
+        <span className="t13 muted">password</span> <strong>{issued.password}</strong>
+      </p>
+      <p className="t13 muted">
+        This is the only time it is shown. If it is lost, issue a new one; it cannot be read back.
+      </p>
+      <button className="btn btn--quiet btn--small" type="button" onClick={onDismiss}>
+        Dismiss
+      </button>
+    </div>
+  );
+}
+
+function describe(err: unknown): string {
+  if (isOffline(err)) return 'That did not reach the server.';
+  if (err instanceof ApiError) return err.message;
+  return 'That did not go through.';
 }

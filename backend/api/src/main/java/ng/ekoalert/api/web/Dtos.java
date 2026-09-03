@@ -193,7 +193,34 @@ public final class Dtos {
     public record SuspendRequest(Boolean suspended) {
     }
 
-    public record ReporterView(long id, String zoneId, String displayName, boolean suspended, Instant verifiedAt) {
+    public record ReporterView(long id,
+                              String zoneId,
+                              String displayName,
+                              boolean suspended,
+                              Instant verifiedAt,
+                              String username,
+                              String phone) {
+    }
+
+    public record ReporterCreateRequest(@NotBlank String zoneId,
+                                        @NotBlank String displayName,
+                                        @NotBlank String phone,
+                                        String username,
+                                        /* Vetting is the point of the record, so it is deliberate
+                                           rather than implied. Omit it and the reporter exists but
+                                           counts toward nothing until an admin says otherwise. */
+                                        Boolean verified) {
+    }
+
+    /**
+     * The password appears here and nowhere else. It is not stored in the clear
+     * and no later call can read it back, so an admin who loses it issues a new
+     * one rather than recovering the old.
+     */
+    public record ReporterCredentials(ReporterView reporter, String username, String password) {
+    }
+
+    public record VerifyRequest(Boolean verified) {
     }
 
     public record ApiError(String error, String message, Instant at) {

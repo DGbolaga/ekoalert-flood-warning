@@ -84,11 +84,18 @@ final class ViewMapper {
     }
 
     static Dtos.ReporterView reporter(Reporter reporter) {
+        return reporter(reporter, null);
+    }
+
+    /** The admin list shows the login too, so suspending stops needing a remembered id. */
+    static Dtos.ReporterView reporter(Reporter reporter, String username) {
         return new Dtos.ReporterView(
                 reporter.getId(),
                 reporter.getZoneId(),
                 reporter.getDisplayName(),
                 reporter.isSuspended(),
-                reporter.getVerifiedAt());
+                reporter.getVerifiedAt(),
+                username,
+                reporter.getPhone());
     }
 }

@@ -69,3 +69,71 @@
 .admin__id {
   width: 84px;
 }
+
+/* Reporters ---------------------------------------------------------------- */
+
+.rep__list {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+}
+
+.rep {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--map-line);
+}
+
+.rep__who {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 190px;
+  min-width: 0;
+}
+
+.rep__acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.btn--small {
+  font-size: 13px;
+  padding: 6px 10px;
+}
+
+.rep__add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 0;
+}
+
+.rep__add-acts {
+  display: flex;
+  gap: 8px;
+}
+
+/* A password on screen is a thing to act on and then get rid of, so it is
+   marked out rather than blended in. */
+.rep__cred {
+  border: 2px dashed var(--ink);
+  border-radius: 10px;
+  padding: 14px;
+  margin: 14px 0;
+  background: var(--paper);
+}
+
+.rep__cred-line {
+  margin: 6px 0;
+  font-size: 17px;
+}
+
+.rep__cred-line strong {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.04em;
+}

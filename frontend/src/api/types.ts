@@ -166,7 +166,17 @@ export interface ReporterView {
   zoneId: string;
   displayName: string;
   suspended: boolean;
+  /** Absent means never vetted, or vetted and then revoked. */
   verifiedAt?: string;
+  username?: string;
+  phone?: string;
+}
+
+/** The password is returned once, on enrolment or reset, and never again. */
+export interface ReporterCredentials {
+  reporter: ReporterView;
+  username: string;
+  password: string;
 }
 
 export interface ReplayReport {
