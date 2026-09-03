@@ -5,6 +5,7 @@ import ng.ekoalert.domain.service.AlertPublisher;
 import ng.ekoalert.engine.Severity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -94,6 +95,31 @@ public class SseAlertPublisher implements AlertPublisher {
             } catch (IOException | IllegalStateException e) {
                 listeners.remove(listener);
                 log.debug("dropped a closed stream: {}", e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Keeps idle streams alive through whatever proxy sits in front of us.
+     *
+     * <p>The normal state of this system is silence: a full map that sends
+     * almost nothing until an edge is confirmed. A stream that carries no bytes
+     * for minutes at a time is indistinguishable from a dead one to a reverse
+     * proxy, and most cut it well inside our own thirty minute timeout. The
+     * browser reconnects, so nothing is lost, but the map spends its time
+     * flapping between live and disconnected and tells the reader the system is
+     * broken when it is merely quiet.
+     *
+     * <p>A comment rather than an event, so no client code has to know.
+     */
+    @Scheduled(fixedDelayString = "${ekoalert.sse.keepalive-millis:20000}")
+    void keepAlive() {
+        for (Listener listener : listeners) {
+            try {
+                listener.emitter().send(SseEmitter.event().comment("keepalive"));
+            } catch (IOException | IllegalStateException e) {
+                listeners.remove(listener);
+                log.debug("dropped a closed stream on keepalive: {}", e.getMessage());
             }
         }
     }

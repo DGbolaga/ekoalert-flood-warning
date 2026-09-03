@@ -52,6 +52,34 @@ ekoalert:
     ttl: PT12H
   sse:
     timeout-millis: 1800000
+    # A silent stream is indistinguishable from a dead one to a reverse proxy,
+    # and silence is this system's normal state. Comment frames keep it open.
+    keepalive-millis: 20000
+  # Exact origins, never wildcards. The map is public but reporting is not, and
+  # a wildcard would let any page a reporter has open spend their token.
+  cors:
+    allowed-origins: ${EKOALERT_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+  # Only reachable behind --demo-users. Overridden on any deployment somebody
+  # else can reach, because the default is printed in a public README.
+  demo-password: ${EKOALERT_DEMO_PASSWORD:ekoalert-demo}
+
+# A platform health check runs forever, so what it costs matters. The database
+# indicator is off deliberately: a managed Postgres that scales to zero would be
+# held awake by the check alone, and on a free tier that exhausts the monthly
+# compute allowance and takes the database down. Liveness is also the honest
+# question, because restarting this process does not repair a database that is
+# down, which is the only thing a failed health check causes.
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+  health:
+    db:
+      enabled: false
 
 logging:
   level:
