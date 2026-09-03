@@ -171,6 +171,69 @@ class ConfidenceGateIT extends IntegrationTestBase {
         });
     }
 
+    @Test
+    @DisplayName("changing your mind replaces your earlier vote instead of counting as both")
+    void latestStanceSupersedesTheEarlierOne() {
+        correctionService.confirm(firstHop.getId(), ada.getId(), NOON);
+        correctionService.reject(firstHop.getId(), ada.getId(), NOON.plus(Duration.ofMinutes(1)));
+
+        // One person, one position. Not one of each.
+        assertThat(corrections.countDistinctReporters(firstHop.getId(), "confirm")).isZero();
+        assertThat(corrections.countDistinctReporters(firstHop.getId(), "reject")).isEqualTo(1);
+        // Both taps are still on the record. The tally forgets, the log does not.
+        assertThat(corrections.findByEdgeIdOrderByIdAsc(firstHop.getId())).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("one of two confirmers changing his mind takes the edge back off confirmed")
+    void withdrawnConfirmationDropsTheCount() {
+        confirmToThreshold(firstHop);
+        assertThat(edges.findById(firstHop.getId())).get()
+                .satisfies(edge -> assertThat(edge.getConfidence()).isEqualTo(Confidence.CONFIRMED));
+
+        correctionService.reject(firstHop.getId(), bola.getId(), NOON.plus(Duration.ofMinutes(5)));
+
+        // Bola's confirmation is gone, so only ada still stands behind it. The
+        // edge stays confirmed because one rejection is not a threshold either;
+        // it is now one voice short in both directions.
+        assertThat(corrections.countDistinctReporters(firstHop.getId(), "confirm")).isEqualTo(1);
+        assertThat(corrections.countDistinctReporters(firstHop.getId(), "reject")).isEqualTo(1);
+        assertThat(edges.findById(firstHop.getId())).get()
+                .satisfies(edge -> assertThat(edge.getConfidence()).isEqualTo(Confidence.CONFIRMED));
+    }
+
+    @Test
+    @DisplayName("a confirmed edge is reversible: two separate residents reject it back")
+    void confirmedEdgeCanBeRejectedAgain() {
+        confirmToThreshold(firstHop);
+
+        correctionService.reject(firstHop.getId(), ada.getId(), NOON.plus(Duration.ofMinutes(5)));
+        assertThat(correctionService.reject(firstHop.getId(), bola.getId(), NOON.plus(Duration.ofMinutes(6)))
+                .thresholdMet()).isTrue();
+
+        assertThat(edges.findById(firstHop.getId())).get()
+                .satisfies(edge -> assertThat(edge.getConfidence()).isEqualTo(Confidence.REJECTED));
+        assertThat(corrections.countDistinctReporters(firstHop.getId(), "confirm")).isZero();
+    }
+
+    @Test
+    @DisplayName("a rejected edge is not permanent either: two residents confirm it back")
+    void rejectedEdgeCanBeConfirmedAgain() {
+        correctionService.reject(firstHop.getId(), ada.getId(), NOON);
+        correctionService.reject(firstHop.getId(), bola.getId(), NOON);
+        assertThat(edges.findById(firstHop.getId())).get()
+                .satisfies(edge -> assertThat(edge.getConfidence()).isEqualTo(Confidence.REJECTED));
+
+        correctionService.confirm(firstHop.getId(), ada.getId(), NOON.plus(Duration.ofMinutes(5)));
+        assertThat(correctionService.confirm(firstHop.getId(), bola.getId(), NOON.plus(Duration.ofMinutes(6)))
+                .thresholdMet()).isTrue();
+
+        assertThat(edges.findById(firstHop.getId())).get()
+                .satisfies(edge -> assertThat(edge.getConfidence()).isEqualTo(Confidence.CONFIRMED));
+        // Nothing was deleted along the way.
+        assertThat(corrections.findByEdgeIdOrderByIdAsc(firstHop.getId())).hasSize(4);
+    }
+
     private void confirmToThreshold(DrainageEdge edge) {
         correctionService.confirm(edge.getId(), ada.getId(), NOON);
         correctionService.confirm(edge.getId(), bola.getId(), NOON);

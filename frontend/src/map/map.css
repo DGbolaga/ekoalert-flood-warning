@@ -41,6 +41,25 @@
   box-sizing: border-box;
 }
 
+/* A corridor terminus. Nothing downstream of it has been recorded, so the ring
+   is left open rather than closed: the map stops here, and somebody who lives
+   here knows what comes next. */
+.zone-marker__dot--terminus {
+  border-style: dashed;
+  border-color: var(--ink);
+  background: var(--paper);
+  position: relative;
+}
+
+.zone-marker__dot--terminus::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--ink);
+  opacity: 0.25;
+}
+
 .zone-marker__active {
   position: relative;
   width: 38px;
@@ -90,6 +109,42 @@
   transition: opacity 260ms var(--ease);
 }
 
+/* The travel time, said on the line itself. It is the only thing the line
+   actually claims, so it is the fastest way to stop it reading as a street.
+   Neutral, because it is not water. */
+.edge-time {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--surface);
+  border: 1px solid var(--mist);
+  color: var(--slate);
+  font-size: var(--t-13);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  white-space: nowrap;
+  transform: translateY(-1px);
+}
+
+.edge-time--inferred {
+  opacity: 0.8;
+}
+
+/* Named once at the head of each chain, so the three corridors read as three
+   named things rather than three accidents. */
+.corridor-label {
+  display: inline-block;
+  color: var(--slate);
+  font-size: var(--t-13);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  text-shadow:
+    0 0 3px var(--paper),
+    0 0 3px var(--paper),
+    0 0 6px var(--paper);
+}
+
 /* Controls ----------------------------------------------------------------- */
 
 .map__controls {
@@ -121,4 +176,24 @@
 
 .map__control[aria-pressed='true'] {
   border-color: var(--ink);
+}
+
+/* Places residents have named that are not zones yet. ---------------------- */
+
+.place-marker {
+  background: none;
+  border: none;
+}
+
+/* Deliberately not a zone dot, and deliberately not a terminus ring either,
+   which is also dashed. A resident-named place is not a zone at all yet, so it
+   gets its own shape: a tilted square reads as "different kind of thing" at a
+   glance, where a second dashed circle would just read as another zone. */
+.place-marker__dot {
+  width: 13px;
+  height: 13px;
+  margin: 2px auto 0;
+  border: 2px dashed var(--slate);
+  background: var(--surface);
+  transform: rotate(45deg);
 }

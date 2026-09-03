@@ -48,7 +48,8 @@ and it is the defence demo.
 | Quorum, escalation, de-escalation, all-clears | Done |
 | Kill switch and replay mode | Done |
 | React frontend: map, reporting, corrections, admin | Done |
-| Backend test suite | 114 tests passing |
+| Residents naming places the graph has no node for | Done |
+| Backend test suite | 125 tests passing |
 
 The seeded pilot graph is 20 zones and 17 edges along three corridors in the
 Ojota to Ogudu to Bariga area.
@@ -125,6 +126,7 @@ delivering, the kill switch, and a replay.
 | `BACKEND_BRIEF.md` | Schema, engine contract, quorum rules, test strategy, the golden scenario. |
 | `API_CONTRACT.md` | Every payload, copied from a live server. Authoritative for frontend work. |
 | `FRONTEND_BRIEF.md` | Design direction and screen specs. |
+| `PROJECT_BRIEF.html` | The project explained end to end, for the team and for the defence. Open it in a browser. Non-technical case, statistics, SDG alignment, context diagram, data flow diagram, and the mechanics. |
 | `backend/README.md` | How to build, run and change the backend. |
 | `frontend/README.md` | Frontend layout, and the contract gaps it works around. |
 | `ekoalert_zones.csv` | The seeded graph, with a column-by-column note on where each value came from. |
@@ -138,6 +140,9 @@ Known and deliberate:
   which falls back to the zone id.
 - **Junction edges between the three corridors do not exist.** Inference is worst
   at exactly the edges that matter most, so they were left blank on purpose.
+  Residents fill them in from the map: one tap to connect two zones the graph
+  already has, or a name and a GPS fix for somewhere it does not. Nothing lands
+  on the graph on one person's say-so, and what does land arrives `inferred`.
   `POST /edges/propose` is the way residents add them.
 - **Four zones are flagged `needs_field_naming`.** They sit more than 2 km from
   any named place in OpenStreetMap. They are not empty land, they need a person.

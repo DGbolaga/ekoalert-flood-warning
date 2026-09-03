@@ -12,12 +12,20 @@ public interface EdgeCorrectionRepository extends JpaRepository<EdgeCorrection, 
     List<EdgeCorrection> findByEdgeIdOrderByIdAsc(Long edgeId);
 
     /**
-     * How many distinct reporters took this action on this edge. Distinct is the
-     * point: the threshold is a count of people, not a count of taps.
+     * How many distinct reporters currently take this position on this edge.
+     *
+     * <p>Two rules are doing work here. Distinct, because the threshold counts
+     * people rather than taps. And <em>currently</em>: only a reporter's most
+     * recent correction on the edge counts, so somebody who confirms and then
+     * rejects is one rejection, not one of each. Every tap stays in the table,
+     * because the log is the evidence trail; it is the tally that reads only the
+     * latest stance, not the history that forgets.
      */
     @Query("""
             select count(distinct c.reporterId) from EdgeCorrection c
             where c.edgeId = :edgeId and c.action = :action and c.reporterId is not null
+              and c.id = (select max(c2.id) from EdgeCorrection c2
+                          where c2.edgeId = c.edgeId and c2.reporterId = c.reporterId)
             """)
     long countDistinctReporters(@Param("edgeId") Long edgeId, @Param("action") String action);
 

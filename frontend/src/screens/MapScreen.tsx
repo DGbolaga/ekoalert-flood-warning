@@ -9,7 +9,7 @@ import { useLive } from '../state/live';
 import type { EdgeView } from '../api/types';
 
 export function MapScreen() {
-  const { zones, edges, counts, loading, loadError, stream } = useLive();
+  const { zones, edges, places, counts, loading, loadError, stream } = useLive();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
 
@@ -27,6 +27,11 @@ export function MapScreen() {
     setSelected({ zoneId: requested });
     setParams({}, { replace: true });
   }, [params, setParams]);
+  const openPlaceOrigin = useCallback(
+    (place: { fromZone: string }) => setSelected({ zoneId: place.fromZone }),
+    [],
+  );
+
   const openEdge = useCallback(
     (edge: EdgeView) => setSelected({ zoneId: edge.fromZone, edgeId: edge.id }),
     [],
@@ -37,7 +42,9 @@ export function MapScreen() {
       <FloodMap
         zones={zones}
         edges={edges}
+        places={places}
         onSelectZone={openZone}
+        onSelectPlace={openPlaceOrigin}
         onSelectEdge={openEdge}
         selectedZoneId={selected?.zoneId}
         celebrateEdgeId={celebrate}

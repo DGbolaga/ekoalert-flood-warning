@@ -2,6 +2,7 @@ package ng.ekoalert.api.web;
 
 import ng.ekoalert.domain.model.Alert;
 import ng.ekoalert.domain.model.DrainageEdge;
+import ng.ekoalert.domain.model.ProposedPlace;
 import ng.ekoalert.domain.model.Reporter;
 import ng.ekoalert.domain.model.Zone;
 import ng.ekoalert.domain.model.ZoneStatus;
@@ -44,6 +45,30 @@ final class ViewMapper {
                 edge.getUpdatedAt(),
                 confirmations,
                 rejections);
+    }
+
+    /**
+     * A pending place has no zone and no edge yet, and may have no position
+     * either. Everything the map needs to draw it as provisional is on the wire,
+     * so the client never has to guess which of those is missing.
+     */
+    static Dtos.PlaceView place(ProposedPlace place, long voices, long threshold,
+                                Dtos.ZoneSummary zone, Dtos.EdgeView edge, boolean mergedInto) {
+        return new Dtos.PlaceView(
+                place.getId(),
+                place.getLandmark(),
+                place.isLocated() ? place.getLocation().getY() : null,
+                place.isLocated() ? place.getLocation().getX() : null,
+                place.isLocated(),
+                place.getFromZone(),
+                place.getStatus(),
+                voices,
+                threshold,
+                ProposedPlace.PROMOTED.equals(place.getStatus()),
+                mergedInto,
+                place.getProposedAt(),
+                zone,
+                edge);
     }
 
     static Dtos.AlertView alert(Alert alert) {

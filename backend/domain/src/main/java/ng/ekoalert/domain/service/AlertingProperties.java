@@ -39,6 +39,25 @@ public class AlertingProperties {
     /** No edge is instant, however short. */
     private int minTravelMinutes = 1;
 
+    /**
+     * How far downstream of its origin zone a resident-named place may sit.
+     *
+     * <p>Not a rule about geography, a rule about usefulness. At the provisional
+     * flow rate this is already an hour and a half of warning, past the point
+     * where a prediction two hops deep means anything. In practice a figure well
+     * over this is somebody's phone reporting where they are standing rather
+     * than where the place is, which is the common way this goes wrong.
+     */
+    private int maxProposedPlaceMetres = 5000;
+
+    /**
+     * How close a resident-named place has to be to an existing zone before it
+     * is treated as that zone under a local name rather than as a new node.
+     * Residents call Z11 by a name the seed never had, and merging is how that
+     * name gets attached instead of splitting one place into two.
+     */
+    private int placeMergeMetres = 250;
+
     public Duration getQuorumWindow() {
         return quorumWindow;
     }
@@ -101,5 +120,21 @@ public class AlertingProperties {
 
     public void setMinTravelMinutes(int minTravelMinutes) {
         this.minTravelMinutes = minTravelMinutes;
+    }
+
+    public int getMaxProposedPlaceMetres() {
+        return maxProposedPlaceMetres;
+    }
+
+    public void setMaxProposedPlaceMetres(int maxProposedPlaceMetres) {
+        this.maxProposedPlaceMetres = maxProposedPlaceMetres;
+    }
+
+    public int getPlaceMergeMetres() {
+        return placeMergeMetres;
+    }
+
+    public void setPlaceMergeMetres(int placeMergeMetres) {
+        this.placeMergeMetres = placeMergeMetres;
     }
 }

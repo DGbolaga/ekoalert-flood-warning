@@ -1,0 +1,214 @@
+.pj {
+  margin-top: 18px;
+}
+
+/* The loud version, on a zone where the map simply stops. */
+.pj--terminus {
+  padding: 16px;
+  border: 2px solid var(--ink);
+  border-radius: var(--r-button);
+}
+
+.pj__title {
+  font-size: var(--t-17);
+  font-weight: 600;
+}
+
+.pj__body {
+  margin-top: 6px;
+  font-size: var(--t-15);
+  color: var(--slate);
+}
+
+.pj__open {
+  margin-top: 14px;
+}
+
+.pj__quiet {
+  width: 100%;
+  text-align: left;
+  min-height: var(--tap);
+  font-size: var(--t-15);
+  color: var(--slate);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pj__list {
+  margin-top: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-top: 1px solid var(--mist);
+}
+
+.pj__option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  min-height: 56px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--mist);
+}
+
+.pj__option:active {
+  background: var(--paper);
+}
+
+.pj__option-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.pj__option-dist {
+  color: var(--slate);
+  font-size: var(--t-15);
+  white-space: nowrap;
+}
+
+.pj__result {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--ink);
+  border-radius: var(--r-button);
+  font-size: var(--t-15);
+}
+
+.pj__error {
+  margin-top: 10px;
+  font-size: var(--t-13);
+}
+
+/* Naming a place the map has no node for. ---------------------------------- */
+
+.pj__form {
+  margin-top: 12px;
+}
+
+.pj__label {
+  display: block;
+  font-size: var(--t-15);
+  color: var(--slate);
+  margin-bottom: 6px;
+}
+
+.pj__hint {
+  margin-top: 8px;
+  font-size: var(--t-13);
+  color: var(--slate);
+}
+
+.pj__gps {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: var(--tap);
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--mist);
+  border-radius: var(--r-button);
+  font-size: var(--t-15);
+  text-align: left;
+}
+
+/* A fix is the difference between a name and a node, so it earns the ink. */
+.pj__gps--on {
+  border-color: var(--ink);
+  border-width: 2px;
+  padding: 9px 13px;
+}
+
+.pj__gps-mark {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--slate);
+}
+
+.pj__gps--on .pj__gps-mark {
+  border-color: var(--ink);
+  background: var(--ink);
+}
+
+.pj__gps-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pj__gps-note {
+  display: block;
+  font-size: var(--t-13);
+  color: var(--slate);
+}
+
+.pj__actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.pj__actions .btn {
+  flex: 1;
+}
+
+/* Places other people have named, waiting on a second voice. ---------------- */
+
+.pj__pending-title {
+  margin-top: 16px;
+  font-size: var(--t-13);
+  color: var(--slate);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pj__pending {
+  margin-top: 8px;
+  border-top: 1px solid var(--mist);
+}
+
+.pj__pending-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-align: left;
+  min-height: 56px;
+  padding: 10px 2px;
+  border-bottom: 1px solid var(--mist);
+}
+
+.pj__pending-row:active {
+  background: var(--paper);
+}
+
+.pj__pending-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.pj__pending-votes {
+  display: block;
+  font-size: var(--t-13);
+  color: var(--slate);
+}
+
+.pj__pending-act {
+  flex: none;
+  font-size: var(--t-13);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+/* A spot far enough away that the claim is almost certainly a slip. */
+.pj__warn {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--ink);
+  border-radius: var(--r-button);
+  font-size: var(--t-13);
+}

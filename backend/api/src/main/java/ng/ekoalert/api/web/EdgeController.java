@@ -3,6 +3,7 @@ package ng.ekoalert.api.web;
 import jakarta.validation.Valid;
 import ng.ekoalert.api.security.AuthenticatedUser;
 import ng.ekoalert.domain.model.CorrectionAction;
+import ng.ekoalert.domain.repo.EdgeCorrectionRepository;
 import ng.ekoalert.domain.service.AlertingProperties;
 import ng.ekoalert.domain.service.CorrectionOutcome;
 import ng.ekoalert.domain.service.EdgeCorrectionService;
@@ -26,10 +27,14 @@ import java.time.Instant;
 public class EdgeController {
 
     private final EdgeCorrectionService corrections;
+    private final EdgeCorrectionRepository log;
     private final AlertingProperties properties;
 
-    public EdgeController(EdgeCorrectionService corrections, AlertingProperties properties) {
+    public EdgeController(EdgeCorrectionService corrections,
+                          EdgeCorrectionRepository log,
+                          AlertingProperties properties) {
         this.corrections = corrections;
+        this.log = log;
         this.properties = properties;
     }
 
@@ -55,6 +60,18 @@ public class EdgeController {
     }
 
     private Dtos.CorrectionResponse respond(CorrectionAction action, CorrectionOutcome outcome) {
+        // Both counts, not just the one that was tapped. A reporter's latest tap
+        // supersedes their earlier one, so rejecting also moves the confirm
+        // count, and a client that only updated the side it tapped would show a
+        // stale number next to a fresh one.
+        Long confirmations = null;
+        Long rejections = null;
+        if (outcome.edge() != null) {
+            confirmations = log.countDistinctReporters(
+                    outcome.edge().getId(), CorrectionAction.CONFIRM.label());
+            rejections = log.countDistinctReporters(
+                    outcome.edge().getId(), CorrectionAction.REJECT.label());
+        }
         return new Dtos.CorrectionResponse(
                 outcome.correction().getId(),
                 action.label(),
@@ -63,6 +80,7 @@ public class EdgeController {
                 outcome.distinctVoices(),
                 properties.getCorrectionThreshold(),
                 outcome.thresholdMet(),
-                outcome.edge() == null ? null : ViewMapper.edge(outcome.edge(), null, null));
+                outcome.edge() == null ? null
+                        : ViewMapper.edge(outcome.edge(), confirmations, rejections));
     }
 }

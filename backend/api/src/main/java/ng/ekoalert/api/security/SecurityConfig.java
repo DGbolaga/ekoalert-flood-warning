@@ -54,10 +54,14 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/graph").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/alerts/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/subscriptions").permitAll()
+                        // Pending places are readable by anyone: a place nobody
+                        // can see is a place nobody can corroborate.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/places").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/replay").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/v1/reports").hasRole("REPORTER")
                         .requestMatchers("/api/v1/edges/**").hasAnyRole("REPORTER", "ADMIN")
+                        .requestMatchers("/api/v1/places/**").hasAnyRole("REPORTER", "ADMIN")
                         .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 // Anonymous callers on a protected route get 401, not 403. The

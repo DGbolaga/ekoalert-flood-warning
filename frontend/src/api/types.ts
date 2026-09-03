@@ -122,6 +122,33 @@ export interface CorrectionResponse {
   edge?: EdgeView;
 }
 
+/**
+ * A place a resident named that the graph has no node for yet.
+ *
+ * `located` is separate from having voices on purpose: the person who knows what
+ * somewhere is called is not always the person standing at it, so a place can be
+ * fully corroborated and still be waiting on a GPS fix before it can be drawn.
+ */
+export interface PlaceView {
+  id: number;
+  landmark: string;
+  lat?: number;
+  lng?: number;
+  located: boolean;
+  fromZone: string;
+  status: 'pending' | 'promoted' | 'rejected';
+  distinctVoices: number;
+  threshold: number;
+  promoted: boolean;
+  /** The place turned out to be an existing zone under a name residents use. */
+  mergedInto: boolean;
+  proposedAt: string;
+  /** Absent until promoted. */
+  zone?: ZoneSummary;
+  /** Absent until promoted. Arrives INFERRED, so it warns nobody. */
+  edge?: EdgeView;
+}
+
 export interface SubscriptionResponse {
   id: number;
   zoneId: string;

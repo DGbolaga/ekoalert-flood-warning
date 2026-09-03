@@ -1,0 +1,1236 @@
+<title>EkoAlert</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    /* Light: paper under an overcast Lagos sky, cooled toward the lagoon. */
+    --ground: #F1F4F4;
+    --surface: #FFFFFF;
+    --surface-sunk: #E7ECEC;
+    --ink: #11181A;
+    --ink-soft: #4C585B;
+    --ink-faint: #74807F;
+    --rule: #CBD5D4;
+    --rule-soft: #DFE6E5;
+
+    /* The water. One accent, used structurally. */
+    --lagoon: #1B4A54;
+    --lagoon-lift: #2C6B77;
+    --lagoon-wash: #E2ECEC;
+
+    /* Semantic only: the app's own depth ramp. Never decorative. */
+    --ankle: #9A7420;
+    --knee-solid: #B55012;
+    --impassable: #8E2721;
+
+    --measure: 68ch;
+    --wide: 1180px;
+
+    --step--1: 0.812rem;
+    --step-0: 1rem;
+    --step-1: 1.22rem;
+    --step-2: 1.55rem;
+    --step-3: 2.05rem;
+    --step-4: 2.85rem;
+    --step-5: 3.9rem;
+
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --serif: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0D1315;
+      --surface: #141C1F;
+      --surface-sunk: #101719;
+      --ink: #E8EEEE;
+      --ink-soft: #A3B0B0;
+      --ink-faint: #7C8A8A;
+      --rule: #2B3639;
+      --rule-soft: #1F292C;
+      --lagoon: #6FB3BF;
+      --lagoon-lift: #8FCBD5;
+      --lagoon-wash: #16262A;
+      --ankle: #D4A93F;
+      --knee-solid: #E07B3C;
+      --impassable: #D96A62;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0D1315;
+    --surface: #141C1F;
+    --surface-sunk: #101719;
+    --ink: #E8EEEE;
+    --ink-soft: #A3B0B0;
+    --ink-faint: #7C8A8A;
+    --rule: #2B3639;
+    --rule-soft: #1F292C;
+    --lagoon: #6FB3BF;
+    --lagoon-lift: #8FCBD5;
+    --lagoon-wash: #16262A;
+    --ankle: #D4A93F;
+    --knee-solid: #E07B3C;
+    --impassable: #D96A62;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Layout ---------------------------------------------------------------- */
+
+  .wrap {
+    width: 100%;
+    max-width: var(--wide);
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  .col {
+    max-width: var(--measure);
+  }
+
+  main section {
+    padding: 0 0 12px;
+  }
+
+  /* Masthead -------------------------------------------------------------- */
+
+  .mast {
+    border-bottom: 1px solid var(--rule);
+    background:
+      linear-gradient(180deg, var(--lagoon-wash) 0%, transparent 78%);
+  }
+
+  .mast__inner {
+    padding: 56px 28px 44px;
+    max-width: var(--wide);
+    margin: 0 auto;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--lagoon);
+    margin: 0 0 20px;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: var(--step-5);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .mast__thesis {
+    font-family: var(--serif);
+    font-size: var(--step-2);
+    line-height: 1.34;
+    color: var(--ink-soft);
+    max-width: 30ch;
+    margin: 22px 0 0;
+    text-wrap: balance;
+  }
+
+  .mast__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 30px;
+    margin-top: 34px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+  }
+
+  .mast__meta b {
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+
+  /* Navigation ------------------------------------------------------------ */
+
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--ground);
+    background: color-mix(in srgb, var(--ground) 92%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .nav__inner {
+    max-width: var(--wide);
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .nav__inner::-webkit-scrollbar { display: none; }
+
+  .nav a {
+    flex: none;
+    padding: 13px 12px;
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--ink-faint);
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+  }
+
+  .nav a:hover { color: var(--ink); border-bottom-color: var(--rule); }
+  .nav a:focus-visible { outline: 2px solid var(--lagoon); outline-offset: -4px; }
+
+  /* Part dividers --------------------------------------------------------- */
+
+  .part {
+    margin: 76px 0 40px;
+    padding-top: 30px;
+    border-top: 2px solid var(--ink);
+  }
+
+  .part__no {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--lagoon);
+  }
+
+  .part__title {
+    font-family: var(--serif);
+    font-size: var(--step-4);
+    font-weight: 600;
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+    margin: 10px 0 0;
+    text-wrap: balance;
+  }
+
+  .part__for {
+    font-size: var(--step-0);
+    color: var(--ink-soft);
+    margin: 12px 0 0;
+    max-width: 52ch;
+  }
+
+  /* Headings -------------------------------------------------------------- */
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: var(--step-3);
+    line-height: 1.14;
+    letter-spacing: -0.015em;
+    margin: 60px 0 18px;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: var(--step-1);
+    line-height: 1.3;
+    margin: 38px 0 12px;
+    text-wrap: balance;
+  }
+
+  h4 {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: var(--step--1);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--lagoon);
+    margin: 30px 0 10px;
+  }
+
+  p { margin: 0 0 18px; }
+
+  a { color: var(--lagoon); text-underline-offset: 2px; }
+
+  strong { font-weight: 600; }
+
+  code, .z {
+    font-family: var(--mono);
+    font-size: 0.9em;
+    background: var(--surface-sunk);
+    padding: 0.1em 0.38em;
+    border-radius: 3px;
+  }
+
+  ul, ol { margin: 0 0 18px; padding-left: 1.25em; }
+  li { margin-bottom: 9px; }
+  li::marker { color: var(--lagoon); }
+
+  .lead {
+    font-size: var(--step-1);
+    line-height: 1.52;
+    color: var(--ink-soft);
+  }
+
+  /* Pull quote ------------------------------------------------------------ */
+
+  .pull {
+    font-family: var(--serif);
+    font-size: var(--step-2);
+    line-height: 1.32;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    border-left: 3px solid var(--lagoon);
+    padding: 4px 0 4px 26px;
+    margin: 36px 0;
+    max-width: 44ch;
+    text-wrap: balance;
+  }
+
+  /* Figures (statistics) -------------------------------------------------- */
+
+  .figs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin: 30px 0;
+  }
+
+  .fig {
+    background: var(--surface);
+    padding: 22px 20px;
+  }
+
+  .fig__n {
+    font-family: var(--mono);
+    font-size: var(--step-3);
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--lagoon);
+    display: block;
+  }
+
+  .fig__l {
+    font-size: var(--step--1);
+    line-height: 1.42;
+    color: var(--ink-soft);
+    margin-top: 10px;
+  }
+
+  .fig__src {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    margin-top: 8px;
+  }
+
+  /* Tables ---------------------------------------------------------------- */
+
+  .tablewrap {
+    overflow-x: auto;
+    margin: 26px 0;
+    border: 1px solid var(--rule);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 520px;
+    background: var(--surface);
+    font-size: var(--step--1);
+  }
+
+  th, td {
+    text-align: left;
+    padding: 11px 15px;
+    border-bottom: 1px solid var(--rule-soft);
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 0.76rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    background: var(--surface-sunk);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  td.num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  /* Diagrams -------------------------------------------------------------- */
+
+  .figure {
+    margin: 36px 0;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+  }
+
+  .figure__scroll {
+    overflow-x: auto;
+    padding: 26px 22px 12px;
+  }
+
+  .figure svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    color: var(--ink);
+  }
+
+  figcaption {
+    border-top: 1px solid var(--rule-soft);
+    padding: 14px 22px 16px;
+    font-size: var(--step--1);
+    line-height: 1.5;
+    color: var(--ink-soft);
+    background: var(--surface-sunk);
+  }
+
+  figcaption b {
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 0.76rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--lagoon);
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  /* Callouts -------------------------------------------------------------- */
+
+  .note {
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--lagoon);
+    background: var(--surface);
+    padding: 18px 22px;
+    margin: 30px 0;
+  }
+
+  .note h4 { margin-top: 0; }
+  .note p:last-child { margin-bottom: 0; }
+
+  .note--hard {
+    border-left-color: var(--impassable);
+  }
+
+  .note--hard h4 { color: var(--impassable); }
+
+  /* Depth key ------------------------------------------------------------- */
+
+  .depths {
+    display: grid;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin: 26px 0;
+  }
+
+  .depth {
+    background: var(--surface);
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+
+  .depth__bar {
+    height: 100%;
+    min-height: 34px;
+    border-radius: 2px;
+  }
+
+  .depth__name {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+  }
+
+  .depth__desc {
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+
+  /* Steps ----------------------------------------------------------------- */
+
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+    margin: 26px 0;
+    display: grid;
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+  }
+
+  .steps li {
+    counter-increment: step;
+    background: var(--surface);
+    padding: 18px 20px 18px 62px;
+    position: relative;
+    margin: 0;
+  }
+
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    left: 20px;
+    top: 18px;
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--lagoon);
+    border: 1px solid var(--rule);
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+  }
+
+  .steps b { display: block; margin-bottom: 3px; }
+  .steps span { font-size: var(--step--1); color: var(--ink-soft); }
+
+  /* Footer ---------------------------------------------------------------- */
+
+  .foot {
+    margin-top: 80px;
+    border-top: 2px solid var(--ink);
+    padding: 34px 0 70px;
+  }
+
+  .sources {
+    font-size: var(--step--1);
+    line-height: 1.55;
+  }
+
+  .sources li { margin-bottom: 11px; color: var(--ink-soft); }
+
+  /* Responsive ------------------------------------------------------------ */
+
+  @media (max-width: 640px) {
+    :root { --step-5: 2.6rem; --step-4: 2.05rem; --step-3: 1.62rem; }
+    .mast__inner { padding: 40px 20px 32px; }
+    .wrap, .nav__inner { padding-left: 20px; padding-right: 20px; }
+    .figure__scroll { padding: 18px 14px 8px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  }
+
+  html { scroll-behavior: smooth; }
+  :target { scroll-margin-top: 60px; }
+</style>
+
+<header class="mast">
+  <div class="mast__inner">
+    <p class="eyebrow">Project brief &middot; COS202 &middot; Group 1</p>
+    <h1>EkoAlert</h1>
+    <p class="mast__thesis">Turning &ldquo;Ojota is flooded&rdquo; into &ldquo;Ketu has forty minutes.&rdquo;</p>
+    <div class="mast__meta">
+      <span><b>Department</b> Computer Sciences, University of Lagos</span>
+      <span><b>Team</b> 12 people, 5 pods, 5 sprints</span>
+      <span><b>Goal</b> UN SDG 11.5 and 13.1</span>
+      <span><b>Pilot</b> Ojota &rarr; Ogudu &rarr; Bariga</span>
+    </div>
+  </div>
+</header>
+
+<nav class="nav" aria-label="Sections">
+  <div class="nav__inner">
+    <a href="#problem">The problem</a>
+    <a href="#why-lagos">Why Lagos</a>
+    <a href="#idea">The idea</a>
+    <a href="#sdg">The SDG</a>
+    <a href="#limits">What it cannot do</a>
+    <a href="#context">Context diagram</a>
+    <a href="#dfd">Data flow</a>
+    <a href="#graph">The graph model</a>
+    <a href="#confidence">The confidence rule</a>
+    <a href="#engine">The engine</a>
+    <a href="#stack">Stack</a>
+    <a href="#sources">Sources</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- ================= PART ONE ================= -->
+
+  <div class="part">
+    <p class="part__no">Part one</p>
+    <h2 class="part__title" style="margin-top:10px">What we are building, and why it matters</h2>
+    <p class="part__for">Written for everybody: teammates on any pod, lecturers, and the people in Ojota, Ogudu and Bariga this is meant to serve. No technical background assumed.</p>
+  </div>
+
+  <section id="problem">
+    <div class="col">
+      <h2>Nigeria does not have a rainfall problem. It has a warning problem.</h2>
+      <p class="lead">Water that is already in your street is not news to you. The person who needs the message is the one two neighbourhoods downstream, who still has forty minutes and does not know it.</p>
+      <p>Flooding is the most destructive recurring natural hazard in Nigeria, and the numbers are not small or historical. They are annual.</p>
+    </div>
+
+    <div class="figs">
+      <div class="fig">
+        <span class="fig__n">662</span>
+        <p class="fig__l">People killed by flooding across Nigeria in a single year, 2022. Another 3,174 were injured.</p>
+        <p class="fig__src">NEMA</p>
+      </div>
+      <div class="fig">
+        <span class="fig__n">2.43M</span>
+        <p class="fig__l">People displaced from their homes in that same year, with over 3.2 million affected in total.</p>
+        <p class="fig__src">NEMA / OCHA</p>
+      </div>
+      <div class="fig">
+        <span class="fig__n">34 of 36</span>
+        <p class="fig__l">States hit. 82,035 houses damaged and 332,327 hectares of farmland lost.</p>
+        <p class="fig__src">NEMA</p>
+      </div>
+      <div class="fig">
+        <span class="fig__n">&#8358;4.2tn</span>
+        <p class="fig__l">Estimated cost to the Nigerian economy from the 2022 floods alone.</p>
+        <p class="fig__src">Federal Government</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <p>2022 was not an outlier. In 2012 the floods killed 363 people, displaced 2.1 million and affected roughly seven million, with total losses assessed at <strong>US$16.9 billion</strong> and a 1.4 percent hit to real GDP growth. Flooding has returned every year since, and every year the same pattern repeats: the water arrives before the warning does.</p>
+
+      <h3>Warning early is the single cheapest thing that works</h3>
+      <p>This is the part that makes the project worth building rather than merely worth writing about. Early warning is not a marginal improvement on disaster response. It is the intervention with the best evidence behind it.</p>
+    </div>
+
+    <div class="figs">
+      <div class="fig">
+        <span class="fig__n">30%</span>
+        <p class="fig__l">Less economic damage from just <strong>24 hours</strong> of notice before a hazard arrives.</p>
+        <p class="fig__src">WMO</p>
+      </div>
+      <div class="fig">
+        <span class="fig__n">6&times;</span>
+        <p class="fig__l">Lower disaster mortality in countries with good early warning systems.</p>
+        <p class="fig__src">WMO / UN</p>
+      </div>
+      <div class="fig">
+        <span class="fig__n">10&times;</span>
+        <p class="fig__l">Return on investment, making early warning among the most cost-effective adaptations available.</p>
+        <p class="fig__src">UNESCAP</p>
+      </div>
+      <div class="fig">
+        <span class="fig__n">179.6M</span>
+        <p class="fig__l">Active telephone lines in Nigeria as of December 2025. The delivery network already exists.</p>
+        <p class="fig__src">NCC</p>
+      </div>
+    </div>
+
+    <div class="col">
+      <p>EkoAlert does not need new sensors, new masts or new infrastructure. It needs the thing Lagos already has in abundance: people with phones who can see the water.</p>
+    </div>
+  </section>
+
+  <section id="why-lagos">
+    <div class="col">
+      <h2>Why Lagos, and why this corridor</h2>
+      <p>Lagos is close to a worst case. Roughly 21 to 25 million people live in a city whose average elevation is <strong>one to four metres above sea level</strong>, on ground that is subsiding by up to 87 millimetres a year, drained by channels that silt up, fill with refuse and get built over.</p>
+      <p>The share of the city classified as flood-vulnerable rose from about <strong>1 percent in 2000 to nearly 35 percent by 2019</strong>. Lagos ranks 15th out of 136 global port cities for population exposure to coastal flooding under a 2070s climate scenario.</p>
+    </div>
+
+    <p class="pull">The water is predictable. It runs downhill, along channels, in a sequence people who live there already know by heart.</p>
+
+    <div class="col">
+      <p>Our pilot corridor runs <strong>Ojota through Ogudu to Bariga</strong>, following the Drainage Channel, Ogudu Creek and Agboyi Creek. We did not choose it arbitrarily. It floods, on the record, on a schedule:</p>
+      <ul>
+        <li>In <strong>July 2024</strong>, heavy rain flooded Ketu-Alapere and Oshodi-Mafoluku among others. A student was swept away by floodwater in the Ketu area.</li>
+        <li>In <strong>2025</strong>, floodwater took over the bridge linking Ojota to Maryland along Ikorodu Road, stranding vehicles and commuters.</li>
+        <li>Reporting on the same corridor notes that the drainage channel which drains Bariga and communities downstream <strong>has been taken over by squatters and by property owners who built across it</strong>, obstructing the flow.</li>
+      </ul>
+      <p>That last point is not background colour. It is a requirement: any model of this corridor has to be able to represent a channel that used to work and no longer does. Our system carries a <span class="z">blocked</span> flag on every connection for exactly this reason, and any reporter can raise it with one tap.</p>
+    </div>
+  </section>
+
+  <section id="idea">
+    <div class="col">
+      <h2>The idea in one page</h2>
+      <p>Lagos already has flood communication. WhatsApp groups and TikTok spread news of flooding faster and further than this project ever will. We are not competing with them, and pretending otherwise would be dishonest.</p>
+      <p>But those channels have three properties that make them insufficient, and each one is a design requirement for us.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>What broadcast channels do</th><th>Why it falls short</th><th>What EkoAlert does instead</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Describe water that is already there</td>
+            <td>A video of flooding in Ojota tells the man two zones downstream nothing, and he is the person who can still act</td>
+            <td>Predicts forward along the drainage, with a rough time to impact</td>
+          </tr>
+          <tr>
+            <td>Address everybody at once</td>
+            <td>People learn that most messages are not about them, and stop reading</td>
+            <td>Warns only the zones water is actually expected to reach, to people subscribed to those zones</td>
+          </tr>
+          <tr>
+            <td>Carry no verification</td>
+            <td>Old flood footage recirculates every season and is believed again</td>
+            <td>Requires two independent vetted reporters in the same zone, inside a time window, before anything escalates</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <h3>How it works, for a resident</h3>
+    </div>
+
+    <ol class="steps">
+      <li><b>Someone reports water</b><span>A vetted community reporter in Ojota opens the app and taps one of three depths. It takes about three seconds.</span></li>
+      <li><b>A second person agrees</b><span>Nothing happens on one report. When a second, different reporter in the same zone logs water inside the time window, the zone escalates. One person tapping twice never counts.</span></li>
+      <li><b>The system looks downstream</b><span>It walks a map of how water actually moves through this corridor, zone by zone, and works out which places are next and roughly how long they have.</span></li>
+      <li><b>Only the affected are warned</b><span>People subscribed to those downstream zones get a message naming their zone, the expected depth, and the minutes until it arrives.</span></li>
+      <li><b>Residents correct the map</b><span>Every connection on the map can be confirmed or rejected from the map itself, in one tap. Residents can also name places the map does not have at all.</span></li>
+    </ol>
+
+    <div class="col">
+      <h3>The three depths</h3>
+      <p>We deliberately avoided centimetres. Nobody standing in a flooded street measures anything. People describe water by what it stops them doing, so that is what we ask.</p>
+    </div>
+
+    <div class="depths">
+      <div class="depth">
+        <div class="depth__bar" style="background: var(--ankle)"></div>
+        <div>
+          <div class="depth__name">Ankle</div>
+          <div class="depth__desc">Passable on foot. Shoes are ruined, the day continues.</div>
+        </div>
+      </div>
+      <div class="depth">
+        <div class="depth__bar" style="background: var(--knee-solid)"></div>
+        <div>
+          <div class="depth__name">Knee</div>
+          <div class="depth__desc">Cars begin to stall. Small vehicles should not attempt it.</div>
+        </div>
+      </div>
+      <div class="depth">
+        <div class="depth__bar" style="background: var(--impassable)"></div>
+        <div>
+          <div class="depth__name">Impassable</div>
+          <div class="depth__desc">Do not enter on foot or by vehicle. Move to higher ground.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sdg">
+    <div class="col">
+      <h2>The Sustainable Development Goal this serves</h2>
+      <p>EkoAlert targets <strong>SDG 11: Sustainable Cities and Communities</strong>, and specifically Target 11.5:</p>
+      <p style="border-left:3px solid var(--lagoon); padding-left:20px; color:var(--ink-soft); font-style:italic">&ldquo;By 2030, significantly reduce the number of deaths and the number of people affected and substantially decrease the direct economic losses relative to global gross domestic product caused by disasters, including water-related disasters, with a focus on protecting the poor and people in vulnerable situations.&rdquo;</p>
+      <p>It also serves <strong>SDG 13: Climate Action</strong>, Target 13.1, on strengthening resilience and adaptive capacity to climate-related hazards.</p>
+      <p>Both targets are measured by the same indicator, <span class="z">11.5.1</span> and <span class="z">13.1.1</span>: <em>the number of deaths, missing persons and directly affected persons attributed to disasters per 100,000 population.</em></p>
+      <p>That matters for how we judge our own project. The indicator counts <strong>people affected</strong>, not only people killed. Someone evacuated in time, whose livelihood survives because they moved a generator or a stall an hour earlier, is a number that moves. A warning system aims squarely at that indicator, and the phrase &ldquo;with a focus on protecting the poor and people in vulnerable situations&rdquo; describes the informal, low-lying, poorly drained settlements along our pilot corridor almost exactly.</p>
+    </div>
+  </section>
+
+  <section id="limits">
+    <div class="col">
+      <h2>What this cannot do, stated plainly</h2>
+      <p>A project defence is stronger for naming its weaknesses first. These are ours.</p>
+
+      <h4>Reach</h4>
+      <p>On day one EkoAlert has no users. A WhatsApp group with four hundred members beats us instantly and will keep beating us. Our answer is not to compete: informal channels are our <em>distribution route</em>. A zone chairman pasting an EkoAlert warning into his estate group is the system working exactly as intended.</p>
+
+      <h4>The map starts out mostly guesswork</h4>
+      <p>We seeded the drainage map by geometric inference so it would be complete on day one, but an inferred connection is a guess and we treat it as one. <strong>No guessed connection is allowed to send a warning.</strong> So at launch the system shows a full map and sends almost nothing, and gets progressively louder as residents confirm connections. That transition is the product.</p>
+
+      <h4>It cannot tell you the water is coming if nobody reports it</h4>
+      <p>The system is only as awake as its reporters. This is a genuine dependency and the reason reporter vetting and retention matter as much as any code we write.</p>
+
+      <h4>Predictions compound error</h4>
+      <p>Each hop downstream multiplies uncertainty, so we cap propagation at two to three hops. A false alarm destroys trust far faster than a missed alarm does, and a system nobody believes warns nobody.</p>
+    </div>
+  </section>
+
+  <!-- ================= PART TWO ================= -->
+
+  <div class="part">
+    <p class="part__no">Part two</p>
+    <h2 class="part__title" style="margin-top:10px">How we solved it</h2>
+    <p class="part__for">For the Engine, Platform, Frontend and Delivery pods, and for anyone marking the design. Diagrams, data model, algorithms and the reasoning behind the constraints.</p>
+  </div>
+
+  <section id="context">
+    <div class="col">
+      <h2>Context diagram</h2>
+      <p>The context diagram fixes the system boundary: EkoAlert as a single process, the four external entities it exchanges data with, and nothing about its internals.</p>
+      <p>Note the direction of the OpenStreetMap flow. Geography enters the system <strong>once, at seeding</strong>, and never again. Everything that follows comes from people.</p>
+    </div>
+
+    <figure class="figure">
+      <div class="figure__scroll">
+        <svg viewBox="0 0 980 620" role="img" aria-label="Context diagram. EkoAlert sits at the centre. Community reporters send water level reports and blocked drain flags in, and receive acknowledgement and quorum status. Subscribed residents receive warnings naming zone, depth and minutes, and send back subscriptions, edge corrections and place proposals. OpenStreetMap supplies waterway geometry and place nodes as one-time seed data. Administrators send kill switch, vetting and replay commands and receive delivery logs and graph health.">
+          <defs>
+            <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- external entities -->
+          <g stroke="currentColor" stroke-width="1.5" fill="none">
+            <rect x="390" y="40" width="200" height="60"/>
+            <rect x="390" y="520" width="200" height="60"/>
+            <rect x="30" y="280" width="190" height="60"/>
+            <rect x="760" y="280" width="190" height="60"/>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor" text-anchor="middle">
+            <text x="490" y="66">Community</text><text x="490" y="83">Reporter</text>
+            <text x="490" y="546">Subscribed</text><text x="490" y="563">Resident</text>
+            <text x="125" y="306">OpenStreetMap</text><text x="125" y="323">(seed only)</text>
+            <text x="855" y="316">Administrator</text>
+          </g>
+
+          <!-- central process -->
+          <rect x="390" y="250" width="200" height="120" rx="10" fill="none" stroke="#1B4A54" stroke-width="2.5"/>
+          <text x="410" y="278" font-family="IBM Plex Mono, monospace" font-size="12" fill="#1B4A54">0</text>
+          <g font-family="Fraunces, serif" font-size="20" font-weight="600" fill="currentColor" text-anchor="middle">
+            <text x="490" y="305">EkoAlert</text>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="12" fill="currentColor" text-anchor="middle" opacity="0.72">
+            <text x="490" y="326">Flood early</text>
+            <text x="490" y="342">warning system</text>
+          </g>
+
+          <!-- flows -->
+          <g stroke="currentColor" stroke-width="1.4" fill="none" marker-end="url(#ah)">
+            <line x1="450" y1="100" x2="450" y2="248"/>
+            <line x1="530" y1="248" x2="530" y2="102"/>
+            <line x1="450" y1="372" x2="450" y2="518"/>
+            <line x1="530" y1="518" x2="530" y2="374"/>
+            <line x1="220" y1="310" x2="388" y2="310"/>
+            <line x1="592" y1="292" x2="758" y2="292"/>
+            <line x1="758" y1="330" x2="594" y2="330"/>
+          </g>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="11.5" fill="currentColor" opacity="0.85">
+            <text x="438" y="160" text-anchor="end">water level report</text>
+            <text x="438" y="176" text-anchor="end">blocked drain flag</text>
+            <text x="542" y="160">acknowledgement</text>
+            <text x="542" y="176">quorum status</text>
+
+            <text x="438" y="432" text-anchor="end">warning: zone, depth,</text>
+            <text x="438" y="448" text-anchor="end">minutes to impact</text>
+            <text x="542" y="432">subscribe to zone</text>
+            <text x="542" y="448">correct edge, name a place</text>
+
+            <text x="304" y="298" text-anchor="middle">waterway geometry,</text>
+            <text x="304" y="332" text-anchor="middle">place nodes</text>
+
+            <text x="675" y="282" text-anchor="middle">delivery log, graph health</text>
+            <text x="675" y="350" text-anchor="middle">kill switch, vetting, replay</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>
+        <b>Figure 1 &middot; Context diagram (DFD Level 0)</b>
+        The system boundary. Four external entities. Geography flows in once at seeding; every later change to the drainage map comes from residents. Some texts call this diagram Level 0 and number the decomposition below as Level 1; others call the decomposition Level 0. Both are labelled here to avoid ambiguity.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="dfd">
+    <div class="col">
+      <h2>Data flow diagram</h2>
+      <p>Decomposing process 0 gives the five processes that do the work, and the six data stores they read and write. The spine runs left to right: a report arrives, it is tested for quorum, an escalation propagates downstream, and warnings are delivered.</p>
+      <p>Two things sit off the spine deliberately. The <strong>administrator</strong> gates delivery through the kill switch, which is a control flow rather than a data flow. And <strong>process 5.0</strong> runs on a completely different clock from the rest: corrections trickle in over weeks and slowly improve the graph that process 3.0 depends on.</p>
+    </div>
+
+    <figure class="figure">
+      <div class="figure__scroll">
+        <svg viewBox="0 0 1370 620" role="img" aria-label="Level 1 data flow diagram. Process 1.0 Record Report receives reports from the community reporter and writes to data store D2 Report. Process 2.0 Test Quorum reads D2 and writes D3 Zone Status. Process 3.0 Propagate Downstream reads D1 Drainage Graph and produces predictions. Process 4.0 Deliver Warning reads D4 Subscription, writes D5 Alert Log and sends warnings to the subscribed resident. The administrator sends a kill switch control flow into process 4.0. Process 5.0 Correct the Graph receives corrections from residents, writes D6 Correction Log and updates D1 Drainage Graph.">
+          <defs>
+            <marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <!-- entities -->
+          <g stroke="currentColor" stroke-width="1.5" fill="none">
+            <rect x="20" y="300" width="140" height="60"/>
+            <rect x="1200" y="300" width="140" height="60"/>
+            <rect x="560" y="40" width="160" height="60"/>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="12.5" fill="currentColor" text-anchor="middle">
+            <text x="90" y="325">Community</text><text x="90" y="342">Reporter</text>
+            <text x="1270" y="325">Subscribed</text><text x="1270" y="342">Resident</text>
+            <text x="640" y="65">Administrator</text><text x="640" y="82">(admin pod)</text>
+          </g>
+
+          <!-- processes -->
+          <g fill="none" stroke="#1B4A54" stroke-width="2">
+            <rect x="240" y="290" width="160" height="80" rx="9"/>
+            <rect x="480" y="290" width="160" height="80" rx="9"/>
+            <rect x="720" y="290" width="160" height="80" rx="9"/>
+            <rect x="960" y="290" width="160" height="80" rx="9"/>
+            <rect x="720" y="130" width="160" height="80" rx="9"/>
+          </g>
+          <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#1B4A54">
+            <text x="252" y="310">1.0</text>
+            <text x="492" y="310">2.0</text>
+            <text x="732" y="310">3.0</text>
+            <text x="972" y="310">4.0</text>
+            <text x="732" y="150">5.0</text>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor" text-anchor="middle">
+            <text x="320" y="336">Record</text><text x="320" y="353">Report</text>
+            <text x="560" y="336">Test</text><text x="560" y="353">Quorum</text>
+            <text x="800" y="336">Propagate</text><text x="800" y="353">Downstream</text>
+            <text x="1040" y="336">Deliver</text><text x="1040" y="353">Warning</text>
+            <text x="800" y="176">Correct</text><text x="800" y="193">the Graph</text>
+          </g>
+
+          <!-- data stores (Gane-Sarson: id cell + label) -->
+          <g stroke="currentColor" stroke-width="1.4" fill="none">
+            <rect x="240" y="476" width="160" height="40"/><line x1="278" y1="476" x2="278" y2="516"/>
+            <rect x="480" y="476" width="160" height="40"/><line x1="518" y1="476" x2="518" y2="516"/>
+            <rect x="720" y="476" width="160" height="40"/><line x1="758" y1="476" x2="758" y2="516"/>
+            <rect x="960" y="476" width="160" height="40"/><line x1="998" y1="476" x2="998" y2="516"/>
+            <rect x="960" y="540" width="160" height="40"/><line x1="998" y1="540" x2="998" y2="580"/>
+            <rect x="470" y="148" width="170" height="44"/><line x1="508" y1="148" x2="508" y2="192"/>
+          </g>
+          <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#1B4A54">
+            <text x="252" y="501">D2</text>
+            <text x="492" y="501">D3</text>
+            <text x="732" y="501">D1</text>
+            <text x="972" y="501">D4</text>
+            <text x="972" y="565">D5</text>
+            <text x="482" y="175">D6</text>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="12" fill="currentColor">
+            <text x="288" y="500">Report</text>
+            <text x="528" y="500">Zone Status</text>
+            <text x="768" y="494">Drainage</text><text x="768" y="509">Graph</text>
+            <text x="1008" y="500">Subscription</text>
+            <text x="1008" y="564">Alert Log</text>
+            <text x="518" y="169">Correction</text><text x="518" y="184">Log</text>
+          </g>
+
+          <!-- spine -->
+          <g stroke="currentColor" stroke-width="1.5" fill="none" marker-end="url(#ah2)">
+            <line x1="160" y1="330" x2="238" y2="330"/>
+            <line x1="400" y1="330" x2="478" y2="330"/>
+            <line x1="640" y1="330" x2="718" y2="330"/>
+            <line x1="880" y1="330" x2="958" y2="330"/>
+            <line x1="1120" y1="330" x2="1198" y2="330"/>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="10.5" fill="currentColor" text-anchor="middle" opacity="0.85">
+            <text x="199" y="322">report</text>
+            <text x="439" y="322">stored</text>
+            <text x="679" y="322">escalation</text>
+            <text x="938" y="322">alerts</text>
+            <text x="1159" y="322">warning</text>
+          </g>
+
+          <!-- store flows -->
+          <g stroke="currentColor" stroke-width="1.3" fill="none" marker-end="url(#ah2)">
+            <line x1="300" y1="372" x2="300" y2="474"/>
+            <line x1="392" y1="474" x2="500" y2="374"/>
+            <line x1="540" y1="372" x2="540" y2="474"/>
+            <line x1="632" y1="474" x2="740" y2="374"/>
+            <line x1="790" y1="474" x2="790" y2="372"/>
+            <line x1="1000" y1="474" x2="1000" y2="372"/>
+            <path d="M 1120 352 H 1152 V 560 H 1124"/>
+            <path d="M 880 190 H 900 V 500 H 884"/>
+            <path d="M 720 170 H 642"/>
+            <path d="M 1270 298 V 170 H 882"/>
+            <path d="M 720 100 H 1090 V 288"/>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="10.5" fill="currentColor" opacity="0.85">
+            <text x="308" y="428">writes</text>
+            <text x="470" y="430">reads window</text>
+            <text x="548" y="428">escalated</text>
+            <text x="710" y="430">reads status</text>
+            <text x="798" y="440">zones + edges</text>
+            <text x="1008" y="440">who to warn</text>
+            <text x="1160" y="452">logs alert</text>
+            <text x="910" y="250">new edge,</text>
+            <text x="910" y="265">new zone</text>
+            <text x="681" y="158" text-anchor="middle">who and when</text>
+            <text x="975" y="158" text-anchor="middle">confirm, reject, name a place</text>
+            <text x="1100" y="240">kill switch</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>
+        <b>Figure 2 &middot; Data flow diagram (Level 1)</b>
+        Process 0 decomposed. The kill switch enters 4.0 as a control flow: an administrator can halt every outgoing warning without stopping the system from recording reports or escalating zones, so the evidence trail survives the intervention. Process 5.0 writes to the same drainage graph that 3.0 reads, which is how the map improves without a redeploy.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="graph">
+    <div class="col">
+      <h2>The graph model, and the claim an edge actually makes</h2>
+      <p>This is the conceptual core of the project, and the thing most likely to be misunderstood.</p>
+      <p>Zones are nodes: a street cluster, an estate, a ward. Connections between them are directed edges. But an edge from A to B <strong>does not claim that a physical channel runs between them.</strong> It claims something weaker and far more useful:</p>
+    </div>
+
+    <p class="pull">When water is reported in A, water tends to appear in B roughly N minutes later.</p>
+
+    <div class="col">
+      <p>That is an observational claim sourced from residents, not a hydrological one. The distinction drives every design decision that follows, because it means an edge can be true without anyone understanding <em>why</em> it is true, and it means the people best placed to supply it are the ones who have watched it happen every rainy season.</p>
+
+      <h3>Why we could not just compute this</h3>
+      <p>The obvious approach is to derive flow direction from elevation data. It does not work here, and the reason is worth stating precisely: <strong>Lagos is too flat.</strong> At SRTM resolution the height differences that actually route water through the city are smaller than the sensor's own error. Standard D8 flow-direction analysis on that data produces confident nonsense.</p>
+      <p>Nor could we lift the topology from OpenStreetMap. We pulled 95 km of waterway geometry for the pilot corridor and got <strong>105 segments in 44 disconnected components</strong>. That fragmentation is not a setback to work around, it is the evidence for the whole project: the drainage topology of this corridor is not in any dataset, and it has to come from the people who live on it.</p>
+      <p>So the seed graph is built by a deterministic geometric rule, reproducible and checkable by anyone: the next zone downstream along the corridor line, with direction taken as toward the lagoon and travel time estimated at a provisional 55 metres per minute. It is honest scaffolding, and it is explicitly labelled as a guess in the database.</p>
+
+      <h3>What every edge carries</h3>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Field</th><th>Meaning</th><th>Why it exists</th></tr></thead>
+        <tbody>
+          <tr><td class="num">travelMinutes</td><td>Expected lag from A to B</td><td>The number that becomes &ldquo;you have forty minutes&rdquo;</td></tr>
+          <tr><td class="num">confidence</td><td><span class="z">inferred</span>, <span class="z">confirmed</span> or <span class="z">rejected</span></td><td>Separates what we guessed from what residents verified</td></tr>
+          <tr><td class="num">alertable</td><td>Derived, never stored</td><td>True only when confirmed and not blocked, so the rule cannot drift</td></tr>
+          <tr><td class="num">blocked</td><td>The channel is silted, obstructed or built over</td><td>Lagos drains get built over. Reporters raise this as a one-tap field on a normal report</td></tr>
+          <tr><td class="num">inferenceBasis</td><td>Plain text saying where this edge came from</td><td>Provenance stays attached to the claim, not in a spreadsheet somewhere</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <p>The graph lives in the database with an admin editing interface. It is <strong>never hardcoded</strong>, because it will be wrong and it must be fixable without a redeploy. Traversal tolerates cycles, because Lagos drainage has them.</p>
+    </div>
+  </section>
+
+  <section id="confidence">
+    <div class="col">
+      <h2>The confidence rule</h2>
+      <p>This is the single constraint that makes the system trustworthy, and it is worth stating as a rule rather than a feature:</p>
+      <p class="pull" style="margin-top:24px">Every edge is seeded by inference so the map is complete on day one. No inferred edge may ever fire an alert.</p>
+      <p>So the system launches showing a full, honest map of guesses that sends almost nothing. An edge becomes <span class="z">confirmed</span> only when enough separate residents affirm it, or when observed reports show the timing holds. As edges cross that threshold the system gets progressively louder.</p>
+    </div>
+
+    <figure class="figure">
+      <div class="figure__scroll">
+        <svg viewBox="0 0 900 260" role="img" aria-label="The confidence gate. Water reported in Ojota travels along a confirmed edge of sixteen minutes to Ogudu, and that warning is delivered. The next edge from Ogudu to Ketu is only inferred, drawn dashed, so the predicted warning for Ketu is computed but held back and not delivered.">
+          <defs>
+            <marker id="ah3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+
+          <g stroke="currentColor" stroke-width="2" fill="none">
+            <circle cx="110" cy="110" r="34"/>
+            <circle cx="450" cy="110" r="34"/>
+            <circle cx="790" cy="110" r="34"/>
+          </g>
+          <g font-family="IBM Plex Mono, monospace" font-size="12" fill="currentColor" text-anchor="middle">
+            <text x="110" y="115">Z01</text>
+            <text x="450" y="115">Z02</text>
+            <text x="790" y="115">Z03</text>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="13" fill="currentColor" text-anchor="middle">
+            <text x="110" y="70">Ojota</text>
+            <text x="450" y="70">Ogudu</text>
+            <text x="790" y="70">Ketu</text>
+          </g>
+
+          <!-- confirmed hop -->
+          <line x1="146" y1="110" x2="412" y2="110" stroke="currentColor" stroke-width="2.5" fill="none" marker-end="url(#ah3)"/>
+          <!-- inferred hop -->
+          <line x1="486" y1="110" x2="752" y2="110" stroke="currentColor" stroke-width="2" stroke-dasharray="7 6" opacity="0.55" fill="none" marker-end="url(#ah3)"/>
+
+          <g font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor" text-anchor="middle">
+            <text x="279" y="100">16 min</text>
+            <text x="619" y="100">21 min</text>
+          </g>
+          <g font-family="IBM Plex Sans, sans-serif" font-size="11.5" text-anchor="middle">
+            <text x="279" y="132" fill="#1B4A54" font-weight="600">confirmed by residents</text>
+            <text x="619" y="132" fill="currentColor" opacity="0.7">inferred, never confirmed</text>
+          </g>
+
+          <g font-family="IBM Plex Sans, sans-serif" font-size="12.5" text-anchor="middle">
+            <text x="110" y="188" fill="currentColor" opacity="0.75">two reporters agree</text>
+            <text x="110" y="206" fill="currentColor" opacity="0.75">water is here</text>
+            <text x="450" y="188" fill="#1B4A54" font-weight="600">WARNING DELIVERED</text>
+            <text x="450" y="206" fill="currentColor" opacity="0.75">&ldquo;knee deep, 16 minutes&rdquo;</text>
+            <text x="790" y="188" fill="currentColor" opacity="0.75" font-weight="600">HELD BACK</text>
+            <text x="790" y="206" fill="currentColor" opacity="0.75">predicted, logged,</text>
+            <text x="790" y="224" fill="currentColor" opacity="0.75">not sent</text>
+          </g>
+        </svg>
+      </div>
+      <figcaption>
+        <b>Figure 3 &middot; The confidence gate</b>
+        The same escalation produces two predictions and delivers one. Ketu's warning is computed and written to the alert log marked <span class="z">suppressedBy: inferred_edge</span>, so the team can measure exactly what the system <em>would</em> have sent once that edge is confirmed. Suppression is recorded, not silent.
+      </figcaption>
+    </figure>
+
+    <div class="col">
+      <h3>Correcting the map is one tap, not a form</h3>
+      <p>A form gets used by nobody. Every connection on the map can be confirmed or rejected directly from the zone it belongs to, and the vote count is visible so people can see how close an edge is to flipping.</p>
+      <p>Three rules govern the tally, and each one came from an actual failure we hit while testing:</p>
+      <ul>
+        <li><strong>The threshold counts people, not taps.</strong> One person tapping confirm twice never flips anything.</li>
+        <li><strong>Only a person's most recent position counts.</strong> Tapping yes and then no leaves you as one rejection, not one of each. Every tap is still written to the log, because that log is the evidence trail. It is the tally that reads the latest stance, not the history that forgets.</li>
+        <li><strong>Nothing is permanent.</strong> Two separate residents can flip a confirmed edge to rejected, and two can flip it back. A rejected edge is not deleted, because a rejection is evidence about the terrain rather than a mistake to erase.</li>
+      </ul>
+
+      <h3>Residents can add nodes, not just edges</h3>
+      <p>Correcting an edge assumes both of its ends already exist. Frequently neither does. The pilot stops at 20 seeded zones and water does not, so the honest answer to &ldquo;where does it go next&rdquo; is often a place the graph has never heard of.</p>
+      <p>A resident can name that place. Two things about it go missing separately, and the design treats them separately:</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th></th><th>Required?</th><th>Reasoning</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Landmark</strong></td><td>Yes</td><td>A place nobody can name is a place nobody else can corroborate</td></tr>
+            <tr><td><strong>Position</strong></td><td>No</td><td>The person who knows what somewhere is called is not always the person standing at it. A later voice can supply the pin</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>A proposed place waits in its own table rather than landing in the zone table directly, because the zone table is referenced by alerts, subscriptions and reporters: an unvetted row there would be instantly subscribable and alertable. Promotion needs a name, a position, and the same threshold of distinct voices. The edge it arrives with is <span class="z">inferred</span>, so naming a place warns nobody until that edge is separately confirmed.</p>
+
+      <div class="note">
+        <h4>A design lesson worth keeping</h4>
+        <p>Our first version located places using the phone's GPS alone. A tester tried to name a street he could see on the map near his zone, and the pin landed 12.5 kilometres away, producing an edge with a 228-minute travel time.</p>
+        <p>The bug was conceptual, not technical. <strong>GPS answers &ldquo;where am I&rdquo;, which is only the same question as &ldquo;where is the place&rdquo; when the person is standing in it.</strong> Someone recognising a street two zones away on the map is doing exactly what inference cannot do, and we had given them no way to say it. The fix was a crosshair they drag over the map, with the distance from the origin zone shown live, plus server-side limits that refuse a position on top of the origin or beyond 5 km.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="engine">
+    <div class="col">
+      <h2>Quorum, escalation and the propagation engine</h2>
+
+      <h3>Quorum</h3>
+      <p>A zone escalates when <strong>two different vetted reporters</strong> log water in it within a 45-minute window. The window matters: two reports six hours apart describe two events, not one. The count is of distinct people, so a single reporter cannot escalate a zone alone no matter how many times they tap. Suspended and unverified reporters have their reports stored but not counted, which keeps the record complete without letting it drive alerts.</p>
+
+      <h3>Propagation</h3>
+      <p>Once a zone escalates, the engine walks the drainage graph downstream from it, best-first, accumulating travel time along each path. It emits a predicted alert for each zone it reaches, carrying the severity, the accumulated minutes and the hop count.</p>
+      <p>Four constraints shape the traversal:</p>
+      <ul>
+        <li><strong>Depth is capped at two to three hops.</strong> Errors compound and false alarms destroy trust faster than missed alarms do.</li>
+        <li><strong>Cycles are tolerated.</strong> Lagos drainage genuinely contains them, so the traversal tracks visited zones rather than assuming a tree.</li>
+        <li><strong>Weak edges propagate at reduced severity or not at all.</strong> Confidence is an input to the traversal, not a filter applied afterwards.</li>
+        <li><strong>Blocked edges are downweighted or disabled</strong> until reported clear.</li>
+      </ul>
+
+      <div class="note">
+        <h4>Why the engine is pure Java with no Spring</h4>
+        <p>The propagation engine has no framework dependencies at all. It is pure functions over records, which buys three things: it is unit-testable in isolation with nothing to mock and no database, it is reusable for any city given a graph, and its behaviour is pinned by an immutable golden scenario. If a golden case fails, the engine is wrong. We never edit an assertion to make a test pass.</p>
+      </div>
+
+      <h3>De-escalation</h3>
+      <p>A zone with no new report for 90 minutes clears, and an all-clear goes out. Telling people it is over is part of the job; a warning system that only ever escalates teaches people to ignore it.</p>
+
+      <h3>The kill switch</h3>
+      <p>An administrator can halt every outgoing alert immediately. This is a first-class feature that shipped early, not a nice-to-have. Any system that pushes warnings to real people needs an off button, and ours is deliberately placed so that halting delivery does not stop the system recording reports or escalating zones: the evidence trail survives the intervention.</p>
+
+      <h3>Replay mode</h3>
+      <p>The system can replay a past flood event against the current graph: feed timestamped historical reports in, watch what the engine would have predicted, and compare against what actually happened. This is both our primary validation mechanism for the graph and the centrepiece of the project defence. It is how we answer &ldquo;does this actually work&rdquo; with something other than an opinion.</p>
+    </div>
+  </section>
+
+  <section id="stack">
+    <div class="col">
+      <h2>Architecture and stack</h2>
+      <p>A modular monolith, not microservices. Twelve people over five sprints do not need distributed systems problems on top of the actual problem.</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Choice</th><th>Reasoning</th></tr></thead>
+        <tbody>
+          <tr><td>Language</td><td class="num">Java 21</td><td>Course requirement, and a good fit for the engine's value-type modelling</td></tr>
+          <tr><td>Framework</td><td class="num">Spring Boot 3.3</td><td>Modular monolith: <span class="z">engine</span>, <span class="z">domain</span>, <span class="z">api</span>, <span class="z">app</span></td></tr>
+          <tr><td>Engine</td><td class="num">no framework</td><td>Pure Java, unit-testable in isolation, portable to another city</td></tr>
+          <tr><td>Database</td><td class="num">PostgreSQL + PostGIS</td><td>Real geographic types and distance calculations, not hand-rolled trigonometry</td></tr>
+          <tr><td>Migrations</td><td class="num">Flyway</td><td>The schema is versioned and reproducible on any machine</td></tr>
+          <tr><td>Auth</td><td class="num">JWT</td><td>Stateless, so no session store and no CSRF surface</td></tr>
+          <tr><td>Live updates</td><td class="num">Server-Sent Events</td><td>One-directional server to client, which is exactly what a warning stream is</td></tr>
+          <tr><td>Frontend</td><td class="num">React + Vite + TypeScript</td><td>Mobile-first, with Leaflet for the map</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col">
+      <h3>Testing posture</h3>
+      <p>The suite currently stands at <strong>133 backend tests passing</strong>, across three layers: pure engine tests over records with no infrastructure, domain service tests, and integration tests running against a real PostGIS database with the real migrations via Testcontainers.</p>
+      <p>Two rules override convenience. Engine tests are written <em>before</em> the code they cover. And the golden scenario is immutable.</p>
+
+      <h3>Data provenance, the hard boundary</h3>
+      <p>Every column in the seed data is tagged with where it came from and whether it can be trusted. Coordinates and corridor names come from OpenStreetMap and are reliable. Travel times and downstream links are geometric inference and are provisional. Zone names and landmarks come from a field survey that has not happened, and <strong>are never populated by inference</strong>, which is why the interface falls back to a zone id rather than inventing a name. Four zones sit more than 2 km from any named place on OpenStreetMap: they are not empty land, they need a person.</p>
+      <p>Junction edges between the three corridors were deliberately left blank. Those are the edges that matter most and the ones inference is worst at, so they are exactly the edges we want residents to supply rather than guess at ourselves.</p>
+    </div>
+  </section>
+
+  <section id="sources">
+    <div class="foot">
+      <div class="col">
+        <h2 style="margin-top:0">About these figures</h2>
+        <p>Casualty figures for large floods vary between sources and between reporting dates, because counts are revised as assessments complete. The 2022 Nigeria death toll appears as &ldquo;over 600&rdquo;, 603 and 662 in different reports; we use NEMA's own end-of-year figure of 662 and note the range here rather than picking silently. Lagos population is given as a range for the same reason: metropolitan and state boundaries are counted differently.</p>
+        <p><strong>Before submission, verify each figure against its primary source.</strong> Secondary reporting drifts, and a marker is entitled to check.</p>
+
+        <h3>Sources</h3>
+        <ul class="sources">
+          <li>National Emergency Management Agency, 2022 flood figures, reported via <a href="https://www.pressreader.com/nigeria/daily-trust/20230124/281960316878257">Daily Trust</a> and <a href="https://allafrica.com/stories/202409200056.html">allAfrica</a>.</li>
+          <li><a href="https://www.unocha.org/publications/report/nigeria/nigeria-situation-report-1-november-2022">UN OCHA, Nigeria Situation Report, 1 November 2022</a>.</li>
+          <li><a href="https://en.wikipedia.org/wiki/2022_Nigeria_floods">2022 Nigeria floods</a> and <a href="https://en.wikipedia.org/wiki/2012_Nigeria_floods">2012 Nigeria floods</a>, summary overviews with onward citations.</li>
+          <li><a href="https://www.gfdrr.org/sites/default/files/publication/pda-2012-nigeria.pdf">Nigeria Post-Disaster Needs Assessment, 2012 Floods</a>, Federal Government of Nigeria with the World Bank, EU and UN.</li>
+          <li><a href="https://www.lyellcollection.org/doi/full/10.3389/esss.2024.10087">Vulnerability, Resilience and Adaptation of Lagos Coastal Communities to Flooding</a>, Earth Science, Systems and Society.</li>
+          <li><a href="https://link.springer.com/article/10.1007/s42865-025-00112-2">Spatio-temporal dynamics of Lagos flooding, 2011 and 2021 events</a>, Bulletin of Atmospheric Science and Technology.</li>
+          <li><a href="https://s3.eu-central-1.amazonaws.com/interconnectedrisks/reports/2022/Case-studies/TR_220824_LagosFloods.pdf">Lagos floods case study</a>, UNU Interconnected Disaster Risks.</li>
+          <li><a href="https://wmo.int/media/news/accelerating-solutions-early-warnings-and-extreme-heat">World Meteorological Organization</a> and <a href="https://www.unescap.org/blog/beyond-lives-saved-why-early-warning-systems-are-smart-investment">UNESCAP</a> on early warning effectiveness and return on investment.</li>
+          <li><a href="https://www.un.org/en/climatechange/early-warnings-for-all">Early Warnings for All</a>, United Nations.</li>
+          <li><a href="https://unstats.un.org/sdgs/metadata?text=resilience">UN Statistics Division, SDG indicator metadata</a> for targets 11.5 and 13.1.</li>
+          <li><a href="https://www.vanguardngr.com/2025/12/nigerias-telecom-subscriptions-rise-to-175-3m-as-broadband-penetration-hits-49-89-ncc/">Nigerian Communications Commission subscription data</a>, via Vanguard and <a href="https://guardian.ng/news/nigerias-active-telephone-users-hit-179-6m-as-data-consumption-surges/">The Guardian Nigeria</a>.</li>
+          <li><a href="https://www.thisdaylive.com/2024/07/03/torrential-rain-causes-widespread-flooding-in-lagos/">ThisDay</a> and <a href="https://lightraymedia.org/2024/07/09/lagos-chokes-on-its-own-waste-flood-crisis-a-tale-of-neglect-corruption-and-environmental-degradation">LightRay Media</a> on the July 2024 Lagos floods and obstructed drainage.</li>
+          <li><a href="https://www.vanguardngr.com/2026/07/lagos-submerged-as-floods-sack-homes-paralyse-traffic-halts-businesses/">Vanguard</a> and <a href="https://guardian.ng/news/nigeria/metro/heavy-rainfall-floods-lagos-residents-struggle-to-navigate-streets/">The Guardian Nigeria</a> on subsequent Lagos flooding, including Ikorodu Road and Ojota.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</main>
