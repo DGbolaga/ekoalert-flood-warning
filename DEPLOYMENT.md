@@ -26,22 +26,41 @@ serve this over plain HTTP anywhere.
 
 ## 1. Neon, the database
 
-1. Sign up at [neon.com](https://neon.com) and create a project. Pick a European
-   region so it sits near the Frankfurt backend.
-2. Open the SQL editor and run:
+Neon may offer you a CLI setup flow when you create the project. **You only need
+two things from Neon: the PostGIS extension enabled, and a connection string.**
+Skip `neon config init`, `neon.ts` and `neon deploy`: those belong to Neon's own
+deploy feature and have nothing to do with running this backend on Render.
 
-   ```sql
-   CREATE EXTENSION postgis;
-   ```
+Either route works.
 
-   Flyway's `V1__initial.sql` also runs `CREATE EXTENSION IF NOT EXISTS postgis`,
-   but doing it yourself first proves the role is allowed to, rather than finding
-   out from a failed migration.
-3. Copy the connection details. Neon shows a URI like:
+**Console.** Open the project, run this in the SQL editor, then take the string
+from **Connect**:
 
-   ```
-   postgresql://myuser:mypassword@ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb?sslmode=require
-   ```
+```sql
+CREATE EXTENSION postgis;
+```
+
+**CLI.** Same two steps from the terminal:
+
+```bash
+npm i -g neon@latest && neon login
+
+# Enable PostGIS on the branch Render will talk to.
+neon sql --project-id <your-project-id> --branch production "CREATE EXTENSION postgis;"
+
+# Print the connection string for that branch.
+neon connection-string production --project-id <your-project-id>
+```
+
+Flyway's `V1__initial.sql` also runs `CREATE EXTENSION IF NOT EXISTS postgis`, but
+doing it yourself first proves the role is allowed to, rather than finding out from
+a failed migration.
+
+Either way you end up with a URI like:
+
+```
+postgresql://myuser:mypassword@ep-cool-name-123456.eu-central-1.aws.neon.tech/neondb?sslmode=require
+```
 
 **Spring cannot use that string as-is.** It needs the `jdbc:` form, the credentials
 passed separately, and one extra parameter. Split it into three values:

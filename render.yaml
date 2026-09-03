@@ -48,7 +48,8 @@ services:
   - type: web
     name: ekoalert-web
     runtime: static
-    plan: free
+    # No plan here. A static site has no compute to size, so Render rejects the
+    # field outright rather than ignoring it.
     buildCommand: cd frontend && npm ci && npm run build
     staticPublishPath: ./frontend/dist
     envVars:
