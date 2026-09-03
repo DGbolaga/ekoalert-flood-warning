@@ -1,0 +1,13 @@
+# Build output. The image builds its own; copying 55 MB of stale jars into the
+# context slows every build and risks shipping yesterday's code.
+target/
+*/target/
+
+# Eclipse metadata, per developer rather than per project.
+.settings/
+.project
+.classpath
+
+# Nothing in the image needs these.
+README.md
+demo.sh

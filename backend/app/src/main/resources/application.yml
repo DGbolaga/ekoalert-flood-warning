@@ -52,6 +52,16 @@ ekoalert:
     ttl: PT12H
   sse:
     timeout-millis: 1800000
+    # A silent stream is indistinguishable from a dead one to a reverse proxy,
+    # and silence is this system's normal state. Comment frames keep it open.
+    keepalive-millis: 20000
+  # Exact origins, never wildcards. The map is public but reporting is not, and
+  # a wildcard would let any page a reporter has open spend their token.
+  cors:
+    allowed-origins: ${EKOALERT_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}
+  # Only reachable behind --demo-users. Overridden on any deployment somebody
+  # else can reach, because the default is printed in a public README.
+  demo-password: ${EKOALERT_DEMO_PASSWORD:ekoalert-demo}
 
 logging:
   level:
